@@ -1,2 +1,2 @@
-# lhama-arts
+# gerador-festas
 SaaS para controle de estoque, vendas e geração de contratos.
