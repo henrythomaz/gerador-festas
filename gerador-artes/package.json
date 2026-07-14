@@ -1,5 +1,5 @@
 {
-  "name": "gerador-festas",
+  "name": "gerenciador-festas",
   "version": "1.0.0",
   "description": "SaaS para controle de estoque, vendas e geração de contratos.",
   "main": "src/index.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github-pessoal:henrythomaz/gerador-festas"
+    "url": "git@github-pessoal:henrythomaz/gerenciador-festas"
   },
   "keywords": [],
   "author": "",

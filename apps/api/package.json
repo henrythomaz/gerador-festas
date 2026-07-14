@@ -1,9 +1,9 @@
 {
   "name": "gf-servidor",
   "version": "1.0.0",
-  "description": "Servidor do Gerador de Festas",
+  "description": "Servidor do Gerenciador de Festas",
   "main": "./dist/server.js",
-  "repository": "https://github.com/henrythomaz/gerador-festas.git",
+  "repository": "https://github.com/henrythomaz/gerenciador-festas.git",
   "author": "Henry Thomaz Oliveira Campos",
   "license": "MIT",
   "private": true,

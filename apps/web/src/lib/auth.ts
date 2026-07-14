@@ -18,8 +18,8 @@ export type LoginResponse = {
   user?: GerenciadorUser;
 };
 
-const TOKEN_KEY = "gerador.token";
-const USER_KEY = "gerador.user";
+const TOKEN_KEY = "gerenciador.token";
+const USER_KEY = "gerenciador.user";
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;

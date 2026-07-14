@@ -376,7 +376,7 @@ class UsersController {
     /**
      * Redireciona para o frontend.
      */
-    return res.redirect("http://localhost:5173/gerador-festas/#/login");
+    return res.redirect("http://localhost:5173/gerenciador-festas/#/login");
   }
 }
 

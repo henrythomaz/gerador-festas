@@ -1,2 +1,2 @@
-# gerador-festas
+# gerenciador-festas
 SaaS para controle de estoque, vendas e geração de contratos.

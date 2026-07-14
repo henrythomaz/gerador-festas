@@ -64,14 +64,14 @@ class WelcomeEmailJob {
      */
     await Mail.send({
       to: email,
-      subject: `Bem-vindo(a) ao Gerador de Festas! - ${email}`,
+      subject: `Bem-vindo(a) ao Gerenciador de Festas! - ${email}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #16a34a;">Olá ${nome}!</h1>
           <p>Bem-vindo(a) ao sistema de Geração de Festas. Estamos felizes em tê-lo(a) conosco.</p>
           <p>Explore nossas funcionalidades e comece a organizar seus atendimentos.</p>
           <hr style="margin: 24px 0; border-color: #e5e7eb;">
-          <p style="color: #6b7280; font-size: 14px;">Equipe do Gerador de Festas</p>
+          <p style="color: #6b7280; font-size: 14px;">Equipe do Gerenciador de Festas</p>
         </div>
       `,
       text: `Olá ${nome}. Bem-vindo(a) ao sistema de Geração de Festas!`,

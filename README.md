@@ -1,1 +1,1 @@
-# gerador-festas
+# gerenciador-festas
