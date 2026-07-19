@@ -10,6 +10,7 @@ import { WhereOptions, Op } from "sequelize";
 import * as Yup from "yup";
 
 import User from "../models/User.js";
+import File from "../models/File.js";
 
 import Queue from "../../lib/Queue.js";
 import WelcomeEmailJob from "../jobs/WelcomeEmailJob.js";
@@ -155,7 +156,11 @@ class UsersController {
      * Busca o usuário pelo ID.
      * @type {User|null}
      */
-    const usuario = await User.findByPk(req.params.id);
+    const usuario = await User.findByPk(req.params.id, {
+      include: [
+        { model: File, as: "avatar", attributes: ["id", "nome", "caminho"] },
+      ],
+    });
 
     if (!usuario) {
       return res.status(404).json();
@@ -196,6 +201,7 @@ class UsersController {
       email: Yup.string().email().required(),
       senha: Yup.string().required().min(8),
       confirmarSenha: Yup.string().oneOf([Yup.ref("senha")], "Senha não bate."),
+      file_id: Yup.number().integer().positive().nullable(),
     });
 
     if (!(await schema.isValid(body))) {
@@ -233,7 +239,7 @@ class UsersController {
       email_confirmacao_token: token,
     });
 
-    const { id, nome, email } = novoUsuario;
+    const { id, nome, email, file_id } = novoUsuario;
 
     /**
      * Adiciona jobs à fila para envio de emails.
@@ -246,7 +252,7 @@ class UsersController {
 
     await Queue.add(WelcomeEmailJob.key, { nome, email });
 
-    return res.status(201).json({ id, nome, email });
+    return res.status(201).json({ id, nome, email, file_id });
   }
 
   /**
@@ -284,6 +290,7 @@ class UsersController {
     const schema = Yup.object().shape({
       nome: Yup.string(),
       email: Yup.string().email(),
+      file_id: Yup.number().integer().positive().nullable(),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -296,9 +303,9 @@ class UsersController {
      */
     const usuarioAtualizado = await usuario.update(req.body);
 
-    const { id, nome, email } = usuarioAtualizado;
+    const { id, nome, email, file_id } = usuarioAtualizado;
 
-    return res.json({ id, nome, email });
+    return res.json({ id, nome, email, file_id });
   }
 
   /**

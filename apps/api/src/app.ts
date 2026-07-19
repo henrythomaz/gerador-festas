@@ -6,11 +6,17 @@
 
 import "dotenv/config";
 import express, { Express, Request, Response, NextFunction } from "express";
-import routes from "./routes/routes";
+import routes from "./routes/routes.js";
 import "./database/index.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./config/swagger.js";
 import cors from "cors";
+import { resolve } from "path";
+import { fileURLToPath } from "url";
+
+// Obter __dirname em ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = resolve(__filename, ".."); // Pasta 'src'
 
 /**
  * Classe principal da aplicação.
@@ -19,18 +25,8 @@ import cors from "cors";
  * rotas e tratamento de erros.
  */
 class App {
-  /**
-   * Instância do servidor Express.
-   * @public
-   * @type {Express}
-   */
   public server: Express;
 
-  /**
-   * Construtor da classe App.
-   * @constructor
-   * @description Inicializa o servidor e aplica middlewares, rotas e exception handlers.
-   */
   constructor() {
     this.server = express();
     this.middlewares();
@@ -38,52 +34,28 @@ class App {
     this.exceptionHandler();
   }
 
-  /**
-   * Configura os middlewares da aplicação.
-   * @method middlewares
-   * @description Adiciona CORS, parsing de JSON e URL-encoded.
-   */
   middlewares() {
     this.server.use(cors());
     this.server.use(express.json());
     this.server.use(express.urlencoded({ extended: false }));
   }
 
-  /**
-   * Configura as rotas da aplicação.
-   * @method routes
-   * @description Define a rota de documentação Swagger, o endpoint para o JSON do Swagger
-   * e todas as rotas principais da aplicação.
-   */
   routes() {
     this.server.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     this.server.get("/docs.json", (req, res) => {
       res.json(swaggerSpec);
     });
+    this.server.use("/files", express.static(resolve(__dirname, "..", "tmp", "uploads")));
+    this.server.use('/files/contracts', express.static(resolve(__dirname, 'storage', 'contracts')));
     this.server.use(routes);
   }
 
-  /**
-   * Configura o handler de exceções globais.
-   * @method exceptionHandler
-   * @description Captura erros não tratados e retorna uma resposta padronizada.
-   * Em ambiente de desenvolvimento, exibe o erro no console.
-   */
   exceptionHandler() {
     this.server.use(
-      /**
-       * Middleware de tratamento de erros.
-       * @param {Error} err - Objeto de erro capturado.
-       * @param {Request} req - Objeto de requisição.
-       * @param {Response} res - Objeto de resposta.
-       * @param {NextFunction} _next - Próxima função middleware (não utilizada).
-       * @returns {Response} Resposta JSON com mensagem de erro.
-       */
       (err: Error, req: Request, res: Response, _next: NextFunction) => {
         if (process.env.NODE_ENV === "development") {
           console.error(err);
         }
-
         return res.status(500).json({
           erro: "Erro interno do servidor.",
         });
@@ -92,9 +64,4 @@ class App {
   }
 }
 
-/**
- * Exporta a instância do servidor configurado.
- * @default
- * @description Instância singleton da aplicação pronta para ser usada.
- */
 export default new App().server;

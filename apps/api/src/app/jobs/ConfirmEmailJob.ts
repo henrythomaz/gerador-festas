@@ -67,7 +67,7 @@ class ConfirmEmailJob {
      * URL de confirmação com token.
      * @type {string}
      */
-    const link = `${process.env.URL}/confirmar-email?token=${token}`;
+    const link = `${process.env.FRONT_URL}/confirmar-email?token=${token}`;
 
     /**
      * Envia o email de confirmação.

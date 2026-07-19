@@ -21,6 +21,8 @@ import bcrypt from "bcryptjs";
 interface AtributosUsuario {
   /** ID único do usuário (auto-incrementado) */
   id?: number;
+  /** ID único do file */
+  file_id?: number | null;
   /** Nome completo do usuário */
   nome: string;
   /** Email do usuário (único) */
@@ -90,6 +92,11 @@ class User extends Model<AtributosUsuario> implements AtributosUsuario {
         nome: {
           type: DataTypes.STRING,
           field: "name",
+        },
+        file_id: {
+          type: DataTypes.INTEGER,
+          field: "file_id",
+          allowNull: true,
         },
         /** Email do usuário */
         email: {
@@ -166,10 +173,16 @@ class User extends Model<AtributosUsuario> implements AtributosUsuario {
    * @description (Exemplo) Um usuário pode ter muitos pedidos, etc.
    */
   static associate(models: any) {
-    // Um usuário pode ter muitos contratos
+    // Associação existente com Contract
     models.User.hasMany(models.Contract, {
       foreignKey: "usuario_id",
       as: "contratos",
+    });
+
+    // Associação com File (imagem de perfil)
+    models.User.belongsTo(models.File, {
+      foreignKey: "file_id",
+      as: "avatar",
     });
   }
 

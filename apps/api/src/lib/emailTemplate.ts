@@ -72,7 +72,7 @@ font-size:28px;
 font-weight:700;
 color:#FFFFFF;
 ">
-Gerenciador de Festas
+🎉 Gerenciador de Festas
 </h1>
 
 </td>

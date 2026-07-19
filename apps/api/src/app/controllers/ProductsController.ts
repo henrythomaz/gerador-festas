@@ -10,6 +10,7 @@ import * as Yup from "yup";
 
 import Product from "../models/Product.js";
 import ContractProduct from "../models/ContractProduct.js"; // Importação estática
+import File from "../models/File.js";
 
 // Utils
 import likeFilter from "../utils/likeFilter.js";
@@ -154,7 +155,11 @@ class ProductsController {
    * @returns {Promise<Response>}
    */
   async show(req: Request<ProdutoIdParam>, res: Response) {
-    const produto = await Product.findByPk(req.params.id);
+    const produto = await Product.findByPk(req.params.id, {
+      include: [
+        { model: File, as: "imagem", attributes: ["id", "nome", "caminho"] },
+      ],
+    });
 
     if (!produto) {
       return res.status(404).json();
@@ -180,6 +185,7 @@ class ProductsController {
       preco_aluguel: Yup.number().positive().required(),
       quantidade_total: Yup.number().integer().positive().required(),
       categoria_id: Yup.number().integer().positive().required(),
+      file_id: Yup.number().integer().positive().nullable(),
     });
 
     if (!(await schema.isValid(body))) {

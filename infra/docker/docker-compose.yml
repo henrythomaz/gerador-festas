@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: nginx:alpine
+    image: nginx
     container_name: nginx-load-balancer
     ports:
       - "80:80"
@@ -12,7 +12,6 @@ services:
     depends_on:
       - app
       - app2
-      - app3
     networks:
       - app-network
     restart: unless-stopped
@@ -28,13 +27,13 @@ services:
       - NODE_ENV=development
       - PORT=3000
       - INSTANCE_ID=1
-      - REDIS_HOST=redis          # ← ADICIONADO
+      - REDIS_HOST=redis
     command: yarn dev
     depends_on:
       db:
         condition: service_healthy
       redis:
-        condition: service_healthy   # ← ALTERADO
+        condition: service_healthy
     env_file:
       - ../../.env
     networks:
@@ -52,31 +51,7 @@ services:
       - NODE_ENV=development
       - PORT=3000
       - INSTANCE_ID=2
-      - REDIS_HOST=redis          # ← ADICIONADO
-    command: yarn dev
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    env_file:
-      - ../../.env
-    networks:
-      - app-network
-    restart: unless-stopped
-
-  app3:
-    build:
-      context: ../..
-      dockerfile: Dockerfile.api
-    container_name: servidor-gf-3
-    volumes:
-      - ../../apps/api:/app/apps/api
-    environment:
-      - NODE_ENV=development
-      - PORT=3000
-      - INSTANCE_ID=3
-      - REDIS_HOST=redis          # ← ADICIONADO
+      - REDIS_HOST=redis
     command: yarn dev
     depends_on:
       db:
@@ -112,10 +87,10 @@ services:
       - ../../apps/api:/app/apps/api
     environment:
       - NODE_ENV=development
-      - REDIS_HOST=redis          # ← ADICIONADO
+      - REDIS_HOST=redis
     depends_on:
       redis:
-        condition: service_healthy   # ← ALTERADO
+        condition: service_healthy
       db:
         condition: service_healthy
     env_file:
@@ -147,7 +122,7 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
-    healthcheck:                       # ← ADICIONADO
+    healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s

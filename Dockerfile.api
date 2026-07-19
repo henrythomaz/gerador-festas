@@ -3,17 +3,35 @@ FROM node:20-alpine
 WORKDIR /app
 
 RUN corepack enable
-RUN apk add --no-cache postgresql-client
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
+# Chromium + PostgreSQL client (necessários para puppeteer e migrações)
+RUN apk add --no-cache \
+    postgresql-client \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    && rm -rf /var/cache/apk/*
+
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Copiar arquivos essenciais para instalação
 COPY package.json yarn.lock ./
 COPY .yarn ./.yarn
 COPY .yarnrc.yml ./
-
 COPY apps/api/package.json ./apps/api/package.json
 COPY apps/web/package.json ./apps/web/package.json
 
-RUN yarn install --immutable
+# Instalar Yarn (já definido no packageManager)
+RUN corepack install -g yarn@4.13.0
 
+# Instalar todas as dependências (incluindo as dos workspaces) e depois focar apenas na API
+RUN yarn install --immutable && yarn workspaces focus gf-servidor
+
+# Copiar o restante do código
 COPY . .
 
 WORKDIR /app/apps/api

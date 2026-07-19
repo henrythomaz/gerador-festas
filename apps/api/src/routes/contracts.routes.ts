@@ -100,4 +100,89 @@ routes.delete(
   ContractsController.destroy.bind(ContractsController)
 );
 
+// ============ ROTAS DE PDF ============
+
+/**
+ * @swagger
+ * /contratos/{id}/gerar-pdf:
+ *   post:
+ *     summary: Gera o PDF do contrato
+ *     tags: [Contratos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: PDF gerado com sucesso
+ *       404:
+ *         description: Contrato não encontrado
+ */
+routes.post(
+  '/contratos/:id/gerar-pdf',
+  authMiddleware,
+  ContractsController.generatePdf.bind(ContractsController)
+);
+
+/**
+ * @swagger
+ * /contratos/{id}/download:
+ *   get:
+ *     summary: Baixa o PDF do contrato
+ *     tags: [Contratos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Arquivo PDF
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: PDF não encontrado
+ */
+routes.get(
+  '/contratos/:id/download',
+  authMiddleware,
+  ContractsController.downloadPdf.bind(ContractsController)
+);
+
+/**
+ * @swagger
+ * /contratos/{id}/regenerar-pdf:
+ *   post:
+ *     summary: Regenera o PDF do contrato (apaga o antigo e gera novo)
+ *     tags: [Contratos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: PDF regenerado
+ *       404:
+ *         description: Contrato não encontrado
+ */
+routes.post(
+  '/contratos/:id/regenerar-pdf',
+  authMiddleware,
+  ContractsController.regeneratePdf.bind(ContractsController)
+);
+
 export default routes;

@@ -2,7 +2,6 @@
   "name": "gerenciador-festas",
   "private": true,
   "packageManager": "yarn@4.13.0",
-  "version": "2.0.0",
   "workspaces": [
     "apps/api",
     "apps/web"
@@ -10,23 +9,9 @@
   "scripts": {
     "api": "yarn workspace gf-servidor dev",
     "web": "yarn workspace gf-web dev",
-    "build:web": "yarn workspace gf-web build",
-    "deploy:web": "gh-pages -d apps/web/dist",
-    "lint:web": "yarn workspace gf-web lint",
-    "lint:api": "yarn workspace gf-servidor lint"
-  },
-  "devDependencies": {
-    "@babel/preset-env": "^8.0.2",
-    "@babel/register": "^8.0.1",
-    "@tanstack/router-plugin": "^1.168.20",
-    "gh-pages": "^6.3.0"
-  },
-  "dependencies": {
-    "@tanstack/react-query": "^5.101.2",
-    "@tanstack/react-router": "^1.170.18",
-    "@tanstack/react-start": "^1.168.28",
-    "motion": "^12.42.2",
-    "node-cron": "^4.6.0",
-    "umzug": "^3.8.3"
+    "build": "yarn workspace gf-web build",
+    "deploy": "yarn workspace gf-web deploy",
+    "lint": "yarn workspaces foreach -p run lint",
+    "format": "yarn workspaces foreach -p run format"
   }
 }

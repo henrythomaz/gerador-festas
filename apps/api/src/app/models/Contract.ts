@@ -31,6 +31,10 @@ interface AtributosContrato {
   valor_total: number;
   /** Observações adicionais */
   observacoes: string;
+  pdf_url?: string | null;
+  pdf_filename?: string | null;
+  pdf_hash?: string | null;
+  pdf_generated_at?: Date | null;
   /** Data de criação do registro */
   criado_em?: Date;
   /** Data da última atualização do registro */
@@ -69,6 +73,10 @@ class Contract extends Model<AtributosContrato> implements AtributosContrato {
   declare status?: "ACTIVE" | "ARCHIVED" | "CANCELED";
   declare valor_total: number;
   declare observacoes: string;
+  declare pdf_url?: string | null;
+  declare pdf_filename?: string | null;
+  declare pdf_hash?: string | null;
+  declare pdf_generated_at?: Date | null;
   declare readonly criado_em: Date;
   declare readonly atualizado_em: Date;
 
@@ -128,6 +136,26 @@ class Contract extends Model<AtributosContrato> implements AtributosContrato {
           type: DataTypes.STRING,
           field: "observations",
           allowNull: false,
+        },
+        pdf_url: {
+          type: DataTypes.STRING,
+          field: 'pdf_url',
+          allowNull: true,
+        },
+        pdf_filename: {
+          type: DataTypes.STRING,
+          field: 'pdf_filename',
+          allowNull: true,
+        },
+        pdf_hash: {
+          type: DataTypes.STRING,
+          field: 'pdf_hash',
+          allowNull: true,
+        },  
+        pdf_generated_at: {
+          type: DataTypes.DATE,
+          field: 'pdf_generated_at',
+          allowNull: true,
         },
         /** Data de criação do registro (mapeado para 'created_at' no banco) */
         criado_em: {

@@ -14,6 +14,7 @@ import Product from "../app/models/Product.js";
 import Contract from "../app/models/Contract.js";
 import Category from "../app/models/Category.js";
 import ContractProduct from "../app/models/ContractProduct.js";
+import File from "../app/models/File.js";
 
 /**
  * Classe de gerenciamento do banco de dados.
@@ -60,6 +61,7 @@ class Database {
       Product,
       Category,
       ContractProduct,
+      File,
     };
 
     /**

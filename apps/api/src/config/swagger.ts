@@ -46,7 +46,7 @@ const options = {
     },
     servers: [
       {
-        url: process.env.URL,
+        url: process.env.VITE_BACK_URL,
       },
     ],
   },

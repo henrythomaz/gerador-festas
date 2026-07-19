@@ -13,6 +13,7 @@ import { Sequelize, DataTypes, Model } from "sequelize";
  */
 interface AtributosProduto {
   id?: number;
+  file_id?: number | null;
   nome: string;
   descricao: string;
   preco_aluguel: number;
@@ -53,6 +54,11 @@ class Product extends Model<AtributosProduto> implements AtributosProduto {
           type: DataTypes.STRING,
           field: "name",
           allowNull: false,
+        },
+        file_id: {
+          type: DataTypes.INTEGER,
+          field: "file_id",
+          allowNull: true,
         },
         descricao: {
           type: DataTypes.STRING,
@@ -116,6 +122,11 @@ class Product extends Model<AtributosProduto> implements AtributosProduto {
     models.Product.belongsTo(models.Category, {
       foreignKey: "categorie_id",
       as: "categoria",
+    });
+
+    models.Product.belongsTo(models.File, {
+      foreignKey: "file_id",
+      as: "imagem",
     });
   }
 
