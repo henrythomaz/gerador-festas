@@ -225,7 +225,7 @@ class ContractsController {
 
       // ===== NOVO: REGENERAR PDF APÓS ATUALIZAÇÃO =====
       try {
-        await ContractPdfService.generate(contratoAtualizado.id!);
+        await ContractPdfService.regenerate(contratoAtualizado.id!);
       } catch (pdfError: any) {
         console.error(
           `[ContractsController] Erro ao gerar PDF após atualização do contrato #${contratoAtualizado.id}:`,
@@ -520,32 +520,15 @@ class ContractsController {
   */
   async regeneratePdf(req: Request<ContratoIdParam>, res: Response) {
     try {
-      const contractId = Number(req.params.id);
-      const contrato = await Contract.findByPk(contractId);
-
-      if (!contrato) {
-        return res.status(404).json({ erro: 'Contrato não encontrado.' });
-      }
-
-      // Apaga o PDF antigo
-      if (contrato.pdf_filename) {
-        await ContractPdfService.deletePdfFile(contrato);
-        await contrato.update({
-          pdf_url: null,
-          pdf_filename: null,
-          pdf_hash: null,
-          pdf_generated_at: null,
-        });
-      }
-
-      // Gera novo PDF
-      const { pdfFilename, pdfHash } = await ContractPdfService.generate(contractId);
+      const { pdfFilename, pdfHash } =
+          await ContractPdfService.regenerate(Number(req.params.id));
 
       return res.json({
-        message: 'PDF regenerado com sucesso.',
-        pdf_url: `/files/contracts/${pdfFilename}`,
-        pdf_hash: pdfHash,
+          message: "PDF regenerado com sucesso.",
+          pdf_url: `/files/contracts/${pdfFilename}`,
+          pdf_hash: pdfHash,
       });
+
     } catch (err: any) {
       return res.status(500).json({ erro: err.message });
     }

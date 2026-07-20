@@ -23,7 +23,7 @@ const __dirname = path.dirname(__filename);
 // Diretório onde os PDFs serão salvos
 const STORAGE_DIR = path.resolve(__dirname, '../storage/contracts');
 // Diretório onde as imagens são armazenadas (ajuste conforme sua estrutura)
-const UPLOAD_DIR = path.resolve(__dirname, '../../tmp/uploads');
+const UPLOAD_DIR = path.resolve(__dirname, '../storage/uploads');
 
 class ContractPdfService {
   constructor() {
@@ -48,6 +48,11 @@ class ContractPdfService {
 
     if (!contract) {
       throw new Error(`Contrato #${contractId} não encontrado.`);
+    }
+
+    // Remove o PDF antigo se existir (garante que será sobrescrito)
+    if (contract.pdf_filename) {
+      await this.deletePdfFile(contract);
     }
 
     // 2. Buscar itens do contrato com produtos
@@ -160,6 +165,41 @@ class ContractPdfService {
     });
 
     return { pdfPath, pdfFilename, pdfHash };
+  }
+
+  /**
+   * Regenera o PDF de um contrato existente.
+   * Se o contrato ainda não tiver um PDF (pdf_filename nulo), esta função não faz nada,
+   * pois a regeneração automática só deve ocorrer após a primeira geração manual.
+   * 
+   * @param contractId - ID do contrato
+   * @returns Objeto com caminho, nome e hash do PDF, ou null se não foi regenerado
+   */
+  async regenerate(contractId: number) {
+    const contrato = await Contract.findByPk(contractId);
+
+    if (!contrato) {
+      throw new Error("Contrato não encontrado.");
+    }
+
+    //  VERIFICAÇÃO: se o contrato nunca teve um PDF gerado, não faz nada
+    if (!contrato.pdf_filename) {
+      console.log(`[ContractPdfService] Contrato #${contractId} não possui PDF prévio. Regeneração automática ignorada.`);
+      return null; // ou retorna um objeto vazio, mas null indica que nada foi feito
+    }
+
+    // Se já existe PDF, apaga o antigo e gera novo
+    await this.deletePdfFile(contrato);
+
+    await contrato.update({
+      pdf_url: null,
+      pdf_filename: null,
+      pdf_hash: null,
+      pdf_generated_at: null,
+    });
+
+    // Agora chama generate para criar o novo
+    return this.generate(contractId);
   }
 
   /**

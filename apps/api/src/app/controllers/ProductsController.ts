@@ -9,8 +9,9 @@ import { WhereOptions, Op } from "sequelize";
 import * as Yup from "yup";
 
 import Product from "../models/Product.js";
-import ContractProduct from "../models/ContractProduct.js"; // Importação estática
+import ContractProduct from "../models/ContractProduct.js";
 import File from "../models/File.js";
+import ContractPdfService from "../../services/ContractPdfService.js";
 
 // Utils
 import likeFilter from "../utils/likeFilter.js";
@@ -204,8 +205,9 @@ class ProductsController {
 
   /**
    * Atualiza os dados de um produto.
-   * Ao alterar preco_aluguel, atualiza todos os itens de contrato vinculados e recalcula os totais.
-   * Ao alterar quantidade_total, recalcula a quantidade_disponível com base nos itens alugados.
+   * Ao alterar qualquer campo que afete o PDF (nome, descrição, preço, etc.), 
+   * todos os contratos vinculados têm seus totais recalculados e seus PDFs regenerados.
+   * A regeneração ocorre APÓS o commit da transação para garantir consistência.
    * @method update
    * @async
    */
@@ -237,11 +239,10 @@ class ProductsController {
     try {
       const dadosAtualizacao: any = { ...req.body };
 
-      // ---------- CORREÇÃO: Recalcular disponível baseado nos itens alugados ----------
+      // Se a quantidade_total for alterada, recalcula a disponível com base nos itens alugados
       if (req.body.quantidade_total !== undefined) {
         const novoTotal = req.body.quantidade_total;
 
-        // Soma as quantidades de todos os itens de contrato vinculados a este produto
         const somaQuantidades = await ContractProduct.sum("quantidade", {
           where: { produto_id: produto.id },
           transaction,
@@ -259,14 +260,13 @@ class ProductsController {
         dadosAtualizacao.quantidade_disponivel = novaDisponivel;
       }
 
-      // ---------- CORREÇÃO: Converter preco_aluguel para número antes de comparar ----------
+      // Se o preço mudou, atualiza os itens de contrato com o novo preço e recalcula subtotal
       const novoPreco =
         req.body.preco_aluguel !== undefined
           ? Number(req.body.preco_aluguel)
           : undefined;
 
       if (novoPreco !== undefined && novoPreco !== produto.preco_aluguel) {
-        // Atualiza todos os itens de contrato com o novo preço unitário e recalcula subtotal
         await ContractProduct.update(
           {
             preco_unitario: novoPreco,
@@ -275,31 +275,40 @@ class ProductsController {
           { where: { produto_id: produto.id }, transaction }
         );
 
-        // Obtém os contratos distintos afetados e recalcula os totais
-        const itens = await ContractProduct.findAll({
-          where: { produto_id: produto.id },
-          attributes: ["contrato_id"],
-          group: ["contrato_id"],
-          transaction,
-        });
-
-        for (const item of itens) {
-          await ContractProduct.updateContractTotal(
-            item.contrato_id,
-            transaction
-          );
-        }
-
-        // Atualiza o preço no produto (já incluso em dadosAtualizacao)
+        // (Não atualizamos totais aqui, faremos após o commit)
         dadosAtualizacao.preco_aluguel = novoPreco;
       }
 
-      // Atualiza o produto com os dados já tratados
+      // Atualiza o produto
       const produtoAtualizado = await produto.update(dadosAtualizacao, {
         transaction,
       });
 
       await transaction.commit();
+
+      // ===== APÓS O COMMIT: recalcula totais e regenera PDFs de todos os contratos vinculados =====
+      const itens = await ContractProduct.findAll({
+        where: { produto_id: produto.id },
+        attributes: ["contrato_id"],
+        group: ["contrato_id"],
+      });
+
+      for (const item of itens) {
+        const contractId = item.contrato_id;
+        try {
+          // Recalcula o total do contrato
+          await ContractProduct.updateContractTotal(contractId);
+          // Regenera o PDF
+          await ContractPdfService.regenerate(contractId);
+        } catch (error: any) {
+          console.error(
+            `[ProductsController] Erro ao processar contrato #${contractId} após atualização do produto #${produto.id}:`,
+            error.message
+          );
+          // Continua com os próximos contratos
+        }
+      }
+
       return res.json(produtoAtualizado);
     } catch (err: any) {
       await transaction.rollback();

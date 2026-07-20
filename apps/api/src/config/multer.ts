@@ -9,7 +9,7 @@ const __dirname = dirname(__filename); // Pasta 'config'
 
 export default {
   storage: multer.diskStorage({
-    destination: resolve(__dirname, "..", "..", "tmp", "uploads"),
+    destination: resolve(__dirname, "..", "storage", "uploads"),
     filename: (_req, file, callback) => {
       crypto.randomBytes(16, (err, res) => {
         if (err) return callback(err);

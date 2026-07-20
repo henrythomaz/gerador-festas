@@ -11,6 +11,7 @@ import * as Yup from "yup";
 import ContractProduct from "../models/ContractProduct.js";
 import Product from "../models/Product.js";
 import Client from "../models/Client.js";
+import ContractPdfService from "../../services/ContractPdfService.js";
 
 // Utils
 import dataInterval from "../utils/dataInterval.js";
@@ -135,6 +136,7 @@ class ContractsProductsController {
    * @description O preço unitário é obtido automaticamente do produto.
    * A quantidade disponível do produto é decrementada.
    * O total do contrato é recalculado.
+   * Após o commit, o PDF do contrato é regenerado.
    * @param {Request} req
    * @param {Response} res
    * @returns {Promise<Response>}
@@ -190,10 +192,22 @@ class ContractsProductsController {
         { transaction }
       );
 
-      // Recalcula o total do contrato
+      // Recalcula o total do contrato (sem regenerar PDF)
       await ContractProduct.updateContractTotal(body.contrato_id, transaction);
 
       await transaction.commit();
+
+      // ===== APÓS O COMMIT: regenera o PDF do contrato =====
+      try {
+        await ContractPdfService.regenerate(body.contrato_id);
+      } catch (pdfError: any) {
+        console.error(
+          `[ContractsProductsController] Erro ao regenerar PDF do contrato #${body.contrato_id} após criação de item:`,
+          pdfError.message
+        );
+        // Não interrompe a resposta
+      }
+
       return res.status(201).json(novoItem);
     } catch (err: any) {
       await transaction.rollback();
@@ -207,7 +221,7 @@ class ContractsProductsController {
    * @async
    * @description Ajusta o subtotal e atualiza a disponibilidade do produto.
    * O total do contrato é recalculado.
-   * Não permite alterar preco_unitario diretamente.
+   * Após o commit, o PDF do contrato é regenerado.
    * @param {Request<ItemContratoIdParam>} req
    * @param {Response} res
    * @returns {Promise<Response>}
@@ -266,10 +280,22 @@ class ContractsProductsController {
         { transaction }
       );
 
-      // Recalcula o total do contrato
+      // Recalcula o total do contrato (sem regenerar PDF)
       await ContractProduct.updateContractTotal(item.contrato_id, transaction);
 
       await transaction.commit();
+
+      // ===== APÓS O COMMIT: regenera o PDF do contrato =====
+      try {
+        await ContractPdfService.regenerate(item.contrato_id);
+      } catch (pdfError: any) {
+        console.error(
+          `[ContractsProductsController] Erro ao regenerar PDF do contrato #${item.contrato_id} após atualização de item:`,
+          pdfError.message
+        );
+        // Não interrompe a resposta
+      }
+
       return res.json(item);
     } catch (err: any) {
       await transaction.rollback();
@@ -282,6 +308,7 @@ class ContractsProductsController {
    * @method destroy
    * @async
    * @description Devolve a quantidade ao estoque do produto e recalcula o total do contrato.
+   * Após o commit, o PDF do contrato é regenerado.
    * @param {Request<ItemContratoIdParam>} req
    * @param {Response} res
    * @returns {Promise<Response>}
@@ -325,10 +352,22 @@ class ContractsProductsController {
         { transaction }
       );
 
-      // Recalcula o total do contrato
+      // Recalcula o total do contrato (sem regenerar PDF)
       await ContractProduct.updateContractTotal(item.contrato_id, transaction);
 
       await transaction.commit();
+
+      // ===== APÓS O COMMIT: regenera o PDF do contrato =====
+      try {
+        await ContractPdfService.regenerate(item.contrato_id);
+      } catch (pdfError: any) {
+        console.error(
+          `[ContractsProductsController] Erro ao regenerar PDF do contrato #${item.contrato_id} após exclusão de item:`,
+          pdfError.message
+        );
+        // Não interrompe a resposta
+      }
+
       return res.json();
     } catch (err: any) {
       await transaction.rollback();

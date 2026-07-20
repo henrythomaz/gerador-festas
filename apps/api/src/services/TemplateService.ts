@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Diretório onde as imagens são armazenadas (ajuste conforme sua estrutura)
-const UPLOAD_DIR = path.resolve(__dirname, '../../tmp/uploads');
+const UPLOAD_DIR = path.resolve(__dirname, '../storage/uploads');
 
 class TemplateService {
   private templatesDir: string;

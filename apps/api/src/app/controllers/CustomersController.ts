@@ -9,6 +9,8 @@ import { WhereOptions, Op } from "sequelize";
 import * as Yup from "yup";
 
 import Customer from "../models/Customer.js";
+import Contract from "../models/Contract.js";
+import ContractPdfService from "../../services/ContractPdfService.js";
 
 // Utils
 import likeFilter from "../utils/likeFilter.js";
@@ -63,10 +65,6 @@ class CustomersController {
    */
   async index(req: Request, res: Response) {
     try {
-      /**
-       * Schema de validação para os parâmetros de query.
-       * @type {Yup.ObjectSchema}
-       */
       const schema = Yup.object({
         nome: Yup.string(),
         telefone: Yup.string(),
@@ -82,39 +80,25 @@ class CustomersController {
         limit: Yup.number().min(1).max(100),
       });
 
-      /**
-       * Query validada e tipada.
-       * @type {Query}
-       */
       const query = await schema.validate(req.query, {
         stripUnknown: true,
       });
 
-      /**
-       * Configuração de paginação.
-       */
       const page = Number(query.page) || 1;
       const limit = Number(query.limit) || 25;
 
-      /**
-       * Construção da cláusula WHERE para filtros.
-       * @type {WhereOptions}
-       */
       const where: WhereOptions = {};
       const and: any[] = [];
 
-      // Aplica filtros LIKE para nome, telefone, cpf, email
       likeFilter(and, "nome", query.nome);
       likeFilter(and, "telefone", query.telefone);
       likeFilter(and, "cpf", query.cpf);
       likeFilter(and, "email", query.email);
 
-      // Filtro exato para status
       if (query.status) {
         and.push({ status: query.status });
       }
 
-      // Filtros de data para criação e atualização
       const criado = dataInterval(query.criadoAntes, query.criadoDepois);
       if (criado) and.push({ criado_em: criado });
 
@@ -128,10 +112,6 @@ class CustomersController {
         where[Op.and] = and;
       }
 
-      /**
-       * Busca os clientes com os filtros aplicados.
-       * @type {Customer[]}
-       */
       const clientes = await Customer.findAll({
         where,
         order: ordenation(query.sort),
@@ -158,10 +138,6 @@ class CustomersController {
    * // GET /clientes/1
    */
   async show(req: Request<ClienteIdParam>, res: Response) {
-    /**
-     * Busca o cliente pelo ID.
-     * @type {Customer|null}
-     */
     const cliente = await Customer.findByPk(req.params.id);
 
     if (!cliente) {
@@ -194,10 +170,6 @@ class CustomersController {
   async create(req: Request, res: Response) {
     const { body } = req;
 
-    /**
-     * Schema de validação para criação de cliente.
-     * @type {Yup.ObjectSchema}
-     */
     const schema = Yup.object().shape({
       nome: Yup.string().required(),
       telefone: Yup.string().required(),
@@ -212,10 +184,6 @@ class CustomersController {
       return res.status(400).json({ erro: "Erro ao validar schema." });
     }
 
-    /**
-     * Verifica se CPF já está cadastrado.
-     * @type {Customer|null}
-     */
     const clienteCpfExiste = await Customer.findOne({
       where: { cpf: body.cpf },
     });
@@ -224,10 +192,6 @@ class CustomersController {
       return res.status(409).json({ erro: "CPF já cadastrado." });
     }
 
-    /**
-     * Verifica se email já está cadastrado.
-     * @type {Customer|null}
-     */
     const clienteEmailExiste = await Customer.findOne({
       where: { email: body.email },
     });
@@ -236,10 +200,6 @@ class CustomersController {
       return res.status(409).json({ erro: "Email já cadastrado." });
     }
 
-    /**
-     * Cria o novo cliente no banco de dados.
-     * @type {Customer}
-     */
     const novoCliente = await Customer.create(body);
 
     return res.status(201).json(novoCliente);
@@ -250,6 +210,7 @@ class CustomersController {
    * @method update
    * @async
    * @description Atualiza os campos permitidos, com verificações de unicidade.
+   * Após a atualização, regenera os PDFs de todos os contratos do cliente.
    * @param {Request<ClienteIdParam>} req - Objeto de requisição Express com parâmetro ID
    * @param {Response} res - Objeto de resposta Express
    * @returns {Promise<Response>} Resposta JSON com dados atualizados
@@ -263,20 +224,12 @@ class CustomersController {
    * }
    */
   async update(req: Request<ClienteIdParam>, res: Response) {
-    /**
-     * Busca o cliente pelo ID.
-     * @type {Customer|null}
-     */
     const cliente = await Customer.findByPk(req.params.id);
 
     if (!cliente) {
       return res.status(404).json();
     }
 
-    /**
-     * Schema de validação para atualização de cliente.
-     * @type {Yup.ObjectSchema}
-     */
     const schema = Yup.object().shape({
       nome: Yup.string(),
       telefone: Yup.string(),
@@ -289,9 +242,6 @@ class CustomersController {
       return res.status(400).json({ erro: "Erro ao validar schema." });
     }
 
-    /**
-     * Verifica se o CPF está sendo alterado e já existe para outro cliente.
-     */
     if (req.body.cpf && req.body.cpf !== cliente.cpf) {
       const cpfExiste = await Customer.findOne({
         where: { cpf: req.body.cpf },
@@ -303,9 +253,6 @@ class CustomersController {
       }
     }
 
-    /**
-     * Verifica se o email está sendo alterado e já existe para outro cliente.
-     */
     if (req.body.email && req.body.email !== cliente.email) {
       const emailExiste = await Customer.findOne({
         where: { email: req.body.email },
@@ -317,11 +264,24 @@ class CustomersController {
       }
     }
 
-    /**
-     * Atualiza o cliente no banco de dados.
-     * @type {Customer}
-     */
     const clienteAtualizado = await cliente.update(req.body);
+
+    // ===== REGENERA PDFs DE TODOS OS CONTRATOS DO CLIENTE =====
+    const contratos = await Contract.findAll({
+      where: { cliente_id: cliente.id }
+    });
+
+    for (const contrato of contratos) {
+      try {
+        await ContractPdfService.regenerate(contrato.id!);
+      } catch (pdfError: any) {
+        console.error(
+          `[CustomersController] Erro ao regenerar PDF do contrato #${contrato.id} após atualização do cliente #${cliente.id}:`,
+          pdfError.message
+        );
+        // Continua com os próximos contratos
+      }
+    }
 
     return res.json(clienteAtualizado);
   }
@@ -339,27 +299,16 @@ class CustomersController {
    * // DELETE /clientes/1
    */
   async destroy(req: Request<ClienteIdParam>, res: Response) {
-    /**
-     * Busca o cliente pelo ID.
-     * @type {Customer|null}
-     */
     const cliente = await Customer.findByPk(req.params.id);
 
     if (!cliente) {
       return res.status(404).json();
     }
 
-    /**
-     * Remove o cliente do banco de dados.
-     */
     await cliente.destroy();
 
     return res.json();
   }
 }
 
-/**
- * Exporta instância única do controlador.
- * @default
- */
 export default new CustomersController();

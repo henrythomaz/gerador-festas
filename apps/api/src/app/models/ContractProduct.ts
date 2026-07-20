@@ -121,6 +121,10 @@ class ContractProduct
    * @method updateContractTotal
    * @param {number} contractId - ID do contrato
    * @param {any} [transaction] - Transação opcional do Sequelize
+   * 
+   * @description
+   * Esta função NÃO regenera o PDF. A regeneração deve ser feita APÓS o commit da transação,
+   * pelos controladores que chamarem este método.
    */
   static async updateContractTotal(contractId: number, transaction?: any) {
     const sequelize = ContractProduct.sequelize!;
@@ -133,7 +137,7 @@ class ContractProduct
     });
     const total = (result as any)[0]?.total || 0;
 
-    // Import dinâmico para evitar dependência circular (Contract importa ContractProduct)
+    // Import dinâmico para evitar dependência circular
     const { default: Contract } = await import("./Contract.js");
     await Contract.update(
       { valor_total: total },
