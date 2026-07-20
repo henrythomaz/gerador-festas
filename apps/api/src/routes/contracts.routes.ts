@@ -123,7 +123,7 @@ routes.delete(
  *         description: Contrato não encontrado
  */
 routes.post(
-  '/contratos/:id/gerar-pdf',
+  "/contratos/:id/gerar-pdf",
   authMiddleware,
   ContractsController.generatePdf.bind(ContractsController)
 );
@@ -154,7 +154,7 @@ routes.post(
  *         description: PDF não encontrado
  */
 routes.get(
-  '/contratos/:id/download',
+  "/contratos/:id/download",
   authMiddleware,
   ContractsController.downloadPdf.bind(ContractsController)
 );
@@ -180,7 +180,7 @@ routes.get(
  *         description: Contrato não encontrado
  */
 routes.post(
-  '/contratos/:id/regenerar-pdf',
+  "/contratos/:id/regenerar-pdf",
   authMiddleware,
   ContractsController.regeneratePdf.bind(ContractsController)
 );

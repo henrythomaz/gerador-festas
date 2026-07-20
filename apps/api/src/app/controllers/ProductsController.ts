@@ -205,7 +205,7 @@ class ProductsController {
 
   /**
    * Atualiza os dados de um produto.
-   * Ao alterar qualquer campo que afete o PDF (nome, descrição, preço, etc.), 
+   * Ao alterar qualquer campo que afete o PDF (nome, descrição, preço, etc.),
    * todos os contratos vinculados têm seus totais recalculados e seus PDFs regenerados.
    * A regeneração ocorre APÓS o commit da transação para garantir consistência.
    * @method update

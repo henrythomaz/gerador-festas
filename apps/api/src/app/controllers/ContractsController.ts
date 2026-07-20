@@ -7,7 +7,7 @@
 import { Request, Response } from "express";
 import { WhereOptions, Op } from "sequelize";
 import * as Yup from "yup";
-import fs from 'fs-extra';
+import fs from "fs-extra";
 
 import Contract from "../models/Contract.js";
 import ContractProduct from "../models/ContractProduct.js";
@@ -18,7 +18,7 @@ import User from "../models/User.js";
 import Queue from "../../lib/Queue.js";
 import ExpirationNotificationJob from "../jobs/ExpirationNotificationJob.js";
 
-import ContractPdfService from '../../services/ContractPdfService.js';
+import ContractPdfService from "../../services/ContractPdfService.js";
 
 // Utils
 import dataInterval from "../utils/dataInterval.js";
@@ -219,7 +219,7 @@ class ContractsController {
       const cliente = await Customer.findByPk(contratoAtualizado.cliente_id);
       if (cliente) {
         await cliente.update({
-          status: contratosAtivosOuLate > 0 ? "ACTIVE" : "ARCHIVED"
+          status: contratosAtivosOuLate > 0 ? "ACTIVE" : "ARCHIVED",
         });
       }
 
@@ -451,17 +451,17 @@ class ContractsController {
   }
 
   /**
-    * Gera o PDF do contrato.
-    * @method generatePdf
-    * @route POST /contratos/:id/gerar-pdf
-  */
+   * Gera o PDF do contrato.
+   * @method generatePdf
+   * @route POST /contratos/:id/gerar-pdf
+   */
   async generatePdf(req: Request<ContratoIdParam>, res: Response) {
     try {
       const contractId = Number(req.params.id);
       const contrato = await Contract.findByPk(contractId);
 
       if (!contrato) {
-        return res.status(404).json({ erro: 'Contrato não encontrado.' });
+        return res.status(404).json({ erro: "Contrato não encontrado." });
       }
 
       // Se já existir PDF, podemos opcionalmente regenerar ou retornar o existente
@@ -471,10 +471,11 @@ class ContractsController {
         await ContractPdfService.deletePdfFile(contrato);
       }
 
-      const { pdfFilename, pdfHash } = await ContractPdfService.generate(contractId);
+      const { pdfFilename, pdfHash } =
+        await ContractPdfService.generate(contractId);
 
       return res.json({
-        message: 'PDF gerado com sucesso.',
+        message: "PDF gerado com sucesso.",
         pdf_url: `/files/contracts/${pdfFilename}`,
         pdf_hash: pdfHash,
       });
@@ -484,27 +485,31 @@ class ContractsController {
   }
 
   /**
-    * Baixa o PDF do contrato.
-    * @method downloadPdf
-    * @route GET /contratos/:id/download
-  */
+   * Baixa o PDF do contrato.
+   * @method downloadPdf
+   * @route GET /contratos/:id/download
+   */
   async downloadPdf(req: Request<ContratoIdParam>, res: Response) {
     try {
       const contractId = Number(req.params.id);
       const contrato = await Contract.findByPk(contractId);
 
       if (!contrato) {
-        return res.status(404).json({ erro: 'Contrato não encontrado.' });
+        return res.status(404).json({ erro: "Contrato não encontrado." });
       }
 
       if (!contrato.pdf_filename) {
-        return res.status(404).json({ erro: 'PDF ainda não gerado para este contrato.' });
+        return res
+          .status(404)
+          .json({ erro: "PDF ainda não gerado para este contrato." });
       }
 
       const filePath = ContractPdfService.getPdfFilePath(contrato.pdf_filename);
 
       if (!(await fs.pathExists(filePath))) {
-        return res.status(404).json({ erro: 'Arquivo PDF não encontrado no servidor.' });
+        return res
+          .status(404)
+          .json({ erro: "Arquivo PDF não encontrado no servidor." });
       }
 
       return res.download(filePath, `contrato-${contrato.id}.pdf`);
@@ -514,21 +519,21 @@ class ContractsController {
   }
 
   /**
-  * Regenera o PDF do contrato (apaga o antigo e gera novo).
-  * @method regeneratePdf
-  * @route POST /contratos/:id/regenerar-pdf
-  */
+   * Regenera o PDF do contrato (apaga o antigo e gera novo).
+   * @method regeneratePdf
+   * @route POST /contratos/:id/regenerar-pdf
+   */
   async regeneratePdf(req: Request<ContratoIdParam>, res: Response) {
     try {
-      const { pdfFilename, pdfHash } =
-          await ContractPdfService.regenerate(Number(req.params.id));
+      const { pdfFilename, pdfHash } = await ContractPdfService.regenerate(
+        Number(req.params.id)
+      );
 
       return res.json({
-          message: "PDF regenerado com sucesso.",
-          pdf_url: `/files/contracts/${pdfFilename}`,
-          pdf_hash: pdfHash,
+        message: "PDF regenerado com sucesso.",
+        pdf_url: `/files/contracts/${pdfFilename}`,
+        pdf_hash: pdfHash,
       });
-
     } catch (err: any) {
       return res.status(500).json({ erro: err.message });
     }

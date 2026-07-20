@@ -268,7 +268,7 @@ class CustomersController {
 
     // ===== REGENERA PDFs DE TODOS OS CONTRATOS DO CLIENTE =====
     const contratos = await Contract.findAll({
-      where: { cliente_id: cliente.id }
+      where: { cliente_id: cliente.id },
     });
 
     for (const contrato of contratos) {

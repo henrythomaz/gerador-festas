@@ -8,8 +8,8 @@ import { Sequelize, DataTypes, Model } from "sequelize";
 
 interface AtributosArquivo {
   id?: number;
-  nome: string;       // nome original
-  caminho: string;    // nome gerado (hash + extensão)
+  nome: string; // nome original
+  caminho: string; // nome gerado (hash + extensão)
   criado_em?: Date;
   atualizado_em?: Date;
 }

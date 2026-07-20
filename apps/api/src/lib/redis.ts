@@ -8,7 +8,7 @@ const redis = createClient({
     connectTimeout: 20000,
     reconnectStrategy: (retries) => {
       if (retries > 10) {
-        return new Error('Retry time exhausted');
+        return new Error("Retry time exhausted");
       }
       return Math.min(retries * 200, 3000);
     },
@@ -19,6 +19,6 @@ redis.on("error", (err) => {
   console.error("Redis error:", err);
 });
 
-redis.connect().catch(err => console.error('Redis connection failed:', err));
+redis.connect().catch((err) => console.error("Redis connection failed:", err));
 
 export default redis;

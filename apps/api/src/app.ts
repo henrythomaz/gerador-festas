@@ -45,8 +45,14 @@ class App {
     this.server.get("/docs.json", (req, res) => {
       res.json(swaggerSpec);
     });
-    this.server.use("/files", express.static(resolve(__dirname, "storage", "uploads")));
-    this.server.use('/files/contracts', express.static(resolve(__dirname, 'storage', 'contracts')));
+    this.server.use(
+      "/files",
+      express.static(resolve(__dirname, "storage", "uploads"))
+    );
+    this.server.use(
+      "/files/contracts",
+      express.static(resolve(__dirname, "storage", "contracts"))
+    );
     this.server.use(routes);
   }
 

@@ -139,22 +139,22 @@ class Contract extends Model<AtributosContrato> implements AtributosContrato {
         },
         pdf_url: {
           type: DataTypes.STRING,
-          field: 'pdf_url',
+          field: "pdf_url",
           allowNull: true,
         },
         pdf_filename: {
           type: DataTypes.STRING,
-          field: 'pdf_filename',
+          field: "pdf_filename",
           allowNull: true,
         },
         pdf_hash: {
           type: DataTypes.STRING,
-          field: 'pdf_hash',
+          field: "pdf_hash",
           allowNull: true,
-        },  
+        },
         pdf_generated_at: {
           type: DataTypes.DATE,
-          field: 'pdf_generated_at',
+          field: "pdf_generated_at",
           allowNull: true,
         },
         /** Data de criação do registro (mapeado para 'created_at' no banco) */

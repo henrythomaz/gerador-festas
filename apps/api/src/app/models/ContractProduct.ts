@@ -121,7 +121,7 @@ class ContractProduct
    * @method updateContractTotal
    * @param {number} contractId - ID do contrato
    * @param {any} [transaction] - Transação opcional do Sequelize
-   * 
+   *
    * @description
    * Esta função NÃO regenera o PDF. A regeneração deve ser feita APÓS o commit da transação,
    * pelos controladores que chamarem este método.
