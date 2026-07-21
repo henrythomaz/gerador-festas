@@ -90,6 +90,8 @@ class CustomersController {
       const where: WhereOptions = {};
       const and: any[] = [];
 
+      and.push({ user_id: req.userId });
+
       likeFilter(and, "nome", query.nome);
       likeFilter(and, "telefone", query.telefone);
       likeFilter(and, "cpf", query.cpf);
@@ -138,7 +140,9 @@ class CustomersController {
    * // GET /clientes/1
    */
   async show(req: Request<ClienteIdParam>, res: Response) {
-    const cliente = await Customer.findByPk(req.params.id);
+    const cliente = await Customer.findOne({
+      where: { id: req.params.id, user_id: req.userId },
+    });
 
     if (!cliente) {
       return res.status(404).json();
@@ -200,7 +204,10 @@ class CustomersController {
       return res.status(409).json({ erro: "Email já cadastrado." });
     }
 
-    const novoCliente = await Customer.create(body);
+    const novoCliente = await Customer.create({
+      ...body,
+      user_id: req.userId,
+    });
 
     return res.status(201).json(novoCliente);
   }
@@ -214,7 +221,9 @@ class CustomersController {
    * @returns {Promise<Response>}
    */
   async update(req: Request<ClienteIdParam>, res: Response) {
-    const cliente = await Customer.findByPk(req.params.id);
+    const cliente = await Customer.findOne({
+      where: { id: req.params.id, user_id: req.userId },
+    });
 
     if (!cliente) {
       return res.status(404).json({ erro: "Cliente não encontrado." });
@@ -306,7 +315,9 @@ class CustomersController {
    * // DELETE /clientes/1
    */
   async destroy(req: Request<ClienteIdParam>, res: Response) {
-    const cliente = await Customer.findByPk(req.params.id);
+    const cliente = await Customer.findOne({
+      where: { id: req.params.id, user_id: req.userId },
+    });
 
     if (!cliente) {
       return res.status(404).json();

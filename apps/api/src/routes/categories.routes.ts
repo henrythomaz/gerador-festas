@@ -25,7 +25,8 @@ const routes = Router();
  * @swagger
  * /categorias:
  *   get:
- *     summary: Lista todas as categorias com filtros e paginação
+ *     summary: Lista todas as categorias do usuário autenticado
+ *     description: Retorna apenas as categorias criadas pelo usuário logado.
  *     tags: [Categorias]
  *     security:
  *       - bearerAuth: []

@@ -23,6 +23,7 @@ interface AtributosCategoria {
   criado_em?: Date;
   /** Data da última atualização do registro */
   atualizado_em?: Date;
+  user_id?: number;
 }
 
 /**
@@ -47,6 +48,7 @@ class Category extends Model<AtributosCategoria> implements AtributosCategoria {
   declare nome: string;
   declare readonly criado_em: Date;
   declare readonly atualizado_em: Date;
+  declare user_id?: number;
 
   /**
    * Inicializa o modelo Category no Sequelize.
@@ -67,6 +69,11 @@ class Category extends Model<AtributosCategoria> implements AtributosCategoria {
           type: DataTypes.STRING,
           field: "name",
           allowNull: false,
+        },
+        user_id: {
+          type: DataTypes.INTEGER,
+          field: "user_id",
+          allowNull: true, // ou false após popular
         },
         /** Data de criação do registro (mapeado para 'created_at' no banco) */
         criado_em: {
@@ -106,6 +113,10 @@ class Category extends Model<AtributosCategoria> implements AtributosCategoria {
     models.Category.hasMany(models.Product, {
       foreignKey: "categorie_id",
       as: "produtos",
+    });
+    models.Category.belongsTo(models.User, {
+      foreignKey: "user_id",
+      as: "usuario",
     });
   }
 }

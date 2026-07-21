@@ -25,7 +25,8 @@ const routes = Router();
  * @swagger
  * /itens-contrato:
  *   get:
- *     summary: Lista todos os itens de contrato com filtros e paginação
+ *     summary: Lista todos os itens de contrato com filtros e paginação do usuário autenticado
+ *     description: Retorna apenas os itens de contrato criados pelo usuário logado.
  *     tags: [Itens Contrato]
  *     security:
  *       - bearerAuth: []

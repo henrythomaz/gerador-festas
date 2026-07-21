@@ -25,7 +25,8 @@ const routes = Router();
  * @swagger
  * /clientes:
  *   get:
- *     summary: Lista todos os clientes com filtros e paginação
+ *     summary: Lista todos os clientes com filtros e paginação do usuário autenticado
+ *     description: Retorna apenas os usuários criados pelo usuário logado.
  *     tags: [Clientes]
  *     security:
  *       - bearerAuth: []

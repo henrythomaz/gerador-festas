@@ -78,6 +78,8 @@ class ContractsProductsController {
       const where: WhereOptions = {};
       const and: any[] = [];
 
+      and.push({ user_id: req.userId });
+
       if (query.contrato_id) {
         and.push({ contrato_id: Number(query.contrato_id) });
       }
@@ -120,7 +122,9 @@ class ContractsProductsController {
    * @returns {Promise<Response>}
    */
   async show(req: Request<ItemContratoIdParam>, res: Response) {
-    const item = await ContractProduct.findByPk(req.params.id);
+    const item = await ContractProduct.findOne({
+      where: { id: req.params.id, user_id: req.userId },
+    });
 
     if (!item) {
       return res.status(404).json();
@@ -174,6 +178,7 @@ class ContractsProductsController {
       // Cria o item de contrato
       const novoItem = await ContractProduct.create(
         {
+          user_id: req.userId,
           contrato_id: body.contrato_id,
           produto_id: body.produto_id,
           quantidade: body.quantidade,
@@ -227,7 +232,9 @@ class ContractsProductsController {
    * @returns {Promise<Response>}
    */
   async update(req: Request<ItemContratoIdParam>, res: Response) {
-    const item = await ContractProduct.findByPk(req.params.id);
+    const item = await ContractProduct.findOne({
+      where: { id: req.params.id, user_id: req.userId },
+    });
     if (!item) {
       return res.status(404).json();
     }
@@ -314,7 +321,9 @@ class ContractsProductsController {
    * @returns {Promise<Response>}
    */
   async destroy(req: Request<ItemContratoIdParam>, res: Response) {
-    const item = await ContractProduct.findByPk(req.params.id);
+    const item = await ContractProduct.findOne({
+      where: { id: req.params.id, user_id: req.userId },
+    });
     if (!item) {
       return res.status(404).json();
     }

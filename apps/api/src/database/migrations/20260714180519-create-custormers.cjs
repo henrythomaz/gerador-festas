@@ -21,11 +21,12 @@ module.exports = {
       cpf: {
         type: Sequelize.STRING,
         allowNull: false,
+        unique: true,
       },
       email: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
+        unique: false,
       },
       status: {
         type: Sequelize.ENUM("ACTIVE", "ARCHIVED"),

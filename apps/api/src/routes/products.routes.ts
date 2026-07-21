@@ -25,7 +25,8 @@ const routes = Router();
  * @swagger
  * /produtos:
  *   get:
- *     summary: Lista todos os produtos com filtros e paginação
+ *     summary: Lista todos os produtos com filtros e paginação do usuário autenticado
+ *     description: Retorna apenas os produtos criados pelo usuário logado.
  *     tags: [Produtos]
  *     security:
  *       - bearerAuth: []

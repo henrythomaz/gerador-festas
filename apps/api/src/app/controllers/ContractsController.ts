@@ -83,6 +83,8 @@ class ContractsController {
       const where: WhereOptions = {};
       const and: any[] = [];
 
+      and.push({ usuario_id: req.userId });
+
       if (query.cliente_id) and.push({ cliente_id: Number(query.cliente_id) });
       if (query.usuario_id) and.push({ usuario_id: Number(query.usuario_id) });
       if (query.status) and.push({ status: query.status });
@@ -125,7 +127,9 @@ class ContractsController {
   }
 
   async show(req: Request<ContratoIdParam>, res: Response) {
-    const contrato = await Contract.findByPk(req.params.id);
+    const contrato = await Contract.findOne({
+  where: { id: req.params.id, usuario_id: req.userId }
+});
     if (!contrato) return res.status(404).json();
     return res.json(contrato);
   }
@@ -149,7 +153,10 @@ class ContractsController {
         stripUnknown: true,
       });
       const dadosContrato = { ...validatedBody, valor_total: 0 };
-      const novoContrato = await Contract.create(dadosContrato);
+      const novoContrato = await Contract.create({
+  ...dadosContrato,
+  usuario_id: req.userId,
+});
 
       // Atualiza status do cliente
       const cliente = await Customer.findByPk(novoContrato.cliente_id);
@@ -164,7 +171,9 @@ class ContractsController {
   }
 
   async update(req: Request<ContratoIdParam>, res: Response) {
-    const contrato = await Contract.findByPk(req.params.id);
+    const contrato = await Contract.findOne({
+  where: { id: req.params.id, usuario_id: req.userId }
+});
     if (!contrato) return res.status(404).json();
 
     const schema = Yup.object().shape({
@@ -239,21 +248,15 @@ class ContractsController {
   }
 
   async destroy(req: Request<ContratoIdParam>, res: Response) {
-    const contrato = await Contract.findByPk(req.params.id);
+    const contrato = await Contract.findOne({
+  where: { id: req.params.id, usuario_id: req.userId }
+});
 
     if (!contrato) return res.status(404).json();
-
-    if (contrato.status === "CANCELED") {
-      return res.status(400).json({
-        erro: "Contrato já cancelado.",
-      });
-    }
 
     const transaction = await Contract.sequelize!.transaction();
 
     try {
-      await contrato.update({ status: "CANCELED" }, { transaction });
-
       await this.finalizeContract(contrato.id!, transaction);
 
       await transaction.commit();
@@ -266,7 +269,9 @@ class ContractsController {
   }
 
   async cancel(req: Request<ContratoIdParam>, res: Response) {
-    const contrato = await Contract.findByPk(req.params.id);
+    const contrato = await Contract.findOne({
+  where: { id: req.params.id, usuario_id: req.userId }
+});
 
     if (!contrato) return res.status(404).json();
 
@@ -295,7 +300,9 @@ class ContractsController {
   }
 
   async archive(req: Request<ContratoIdParam>, res: Response) {
-    const contrato = await Contract.findByPk(req.params.id);
+    const contrato = await Contract.findOne({
+  where: { id: req.params.id, usuario_id: req.userId }
+});
 
     if (!contrato) return res.status(404).json();
 
@@ -350,9 +357,10 @@ class ContractsController {
           await contrato.update({ status: "LATE" }, { transaction });
 
           // Busca o USUÁRIO (responsável) associado ao contrato
-          const usuario = await User.findByPk(contrato.usuario_id, {
-            transaction,
-          });
+          const contrato = await Contract.findOne({
+  where: { id: req.params.id, usuario_id: req.userId },
+    transaction
+});
 
           // Verifica se o usuário existe e tem email válido
           if (!usuario) {
@@ -438,7 +446,9 @@ class ContractsController {
   }
 
   async keepLate(req: Request<ContratoIdParam>, res: Response) {
-    const contrato = await Contract.findByPk(req.params.id);
+    const contrato = await Contract.findOne({
+  where: { id: req.params.id, usuario_id: req.userId }
+});
     if (!contrato) return res.status(404).json();
 
     if (contrato.status !== "LATE") {
@@ -457,8 +467,9 @@ class ContractsController {
    */
   async generatePdf(req: Request<ContratoIdParam>, res: Response) {
     try {
-      const contractId = Number(req.params.id);
-      const contrato = await Contract.findByPk(contractId);
+      const contrato = await Contract.findOne({
+  where: { id: req.params.id, usuario_id: req.userId }
+});
 
       if (!contrato) {
         return res.status(404).json({ erro: "Contrato não encontrado." });
@@ -491,8 +502,9 @@ class ContractsController {
    */
   async downloadPdf(req: Request<ContratoIdParam>, res: Response) {
     try {
-      const contractId = Number(req.params.id);
-      const contrato = await Contract.findByPk(contractId);
+      const contrato = await Contract.findOne({
+  where: { id: req.params.id, usuario_id: req.userId }
+});
 
       if (!contrato) {
         return res.status(404).json({ erro: "Contrato não encontrado." });
@@ -542,7 +554,9 @@ class ContractsController {
   // ==================== MÉTODO PRIVADO ====================
 
   private async finalizeContract(contractId: number, transaction: any) {
-    const contrato = await Contract.findByPk(contractId, { transaction });
+    const contrato = await Contract.findOne({
+  where: { id: contractId, usuario_id: req.userId }, transaction
+});
 
     if (!contrato) return;
 

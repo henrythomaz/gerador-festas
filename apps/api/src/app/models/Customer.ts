@@ -17,6 +17,7 @@ import { Sequelize, DataTypes, Model } from "sequelize";
 interface AtributosCliente {
   /** ID único do cliente (auto-incrementado) */
   id?: number;
+  user_id?: number;
   /** Nome completo do cliente */
   nome: string;
   /** Número de telefone do cliente */
@@ -56,6 +57,7 @@ interface AtributosCliente {
  */
 class Customer extends Model<AtributosCliente> implements AtributosCliente {
   declare id?: number;
+  declare user_id?: number;
   declare nome: string;
   declare telefone: string;
   declare cpf: string;
@@ -78,6 +80,11 @@ class Customer extends Model<AtributosCliente> implements AtributosCliente {
   static initModel(sequelize: Sequelize) {
     const model = super.init(
       {
+        user_id: {
+          type: DataTypes.INTEGER,
+          field: "user_id",
+          allowNull: true,
+        },
         /** Nome do cliente (mapeado para 'name' no banco) */
         nome: {
           type: DataTypes.STRING,
@@ -147,6 +154,10 @@ class Customer extends Model<AtributosCliente> implements AtributosCliente {
     models.Customer.hasMany(models.Contract, {
       foreignKey: "cliente_id",
       as: "contratos",
+    });
+    models.Customer.belongsTo(models.User, {
+      foreignKey: "user_id",
+      as: "usuario",
     });
   }
 }

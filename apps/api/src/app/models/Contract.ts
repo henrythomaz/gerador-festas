@@ -70,7 +70,7 @@ class Contract extends Model<AtributosContrato> implements AtributosContrato {
   declare usuario_id: number;
   declare data_inicio: Date;
   declare data_fim: Date;
-  declare status?: "ACTIVE" | "ARCHIVED" | "CANCELED";
+  declare status?: "ACTIVE" | "ARCHIVED" | "CANCELED" | "LATE";
   declare valor_total: number;
   declare observacoes: string;
   declare pdf_url?: string | null;

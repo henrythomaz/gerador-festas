@@ -96,6 +96,8 @@ class ProductsController {
       const where: WhereOptions = {};
       const and: any[] = [];
 
+      and.push({ user_id: req.userId });
+
       likeFilter(and, "nome", query.nome);
       likeFilter(and, "descricao", query.descricao);
 
@@ -163,7 +165,8 @@ class ProductsController {
    * @returns {Promise<Response>}
    */
   async show(req: Request<ProdutoIdParam>, res: Response) {
-    const produto = await Product.findByPk(req.params.id, {
+    const produto = await Product.findOne({
+      where: { id: req.params.id, user_id: req.userId },
       include: [
         { model: File, as: "imagem", attributes: ["id", "nome", "caminho"] },
       ],
@@ -205,7 +208,10 @@ class ProductsController {
       quantidade_disponivel: body.quantidade_total,
     };
 
-    const novoProduto = await Product.create(dadosProduto);
+    const novoProduto = await Product.create({
+      ...dadosProduto,
+      user_id: req.userId,
+    });
 
     return res.status(201).json(novoProduto);
   }
@@ -219,7 +225,9 @@ class ProductsController {
    * @async
    */
   async update(req: Request<ProdutoIdParam>, res: Response) {
-    const produto = await Product.findByPk(req.params.id);
+    const produto = await Product.findOne({
+      where: { id: req.params.id, user_id: req.userId },
+    });
 
     if (!produto) {
       return res.status(404).json();
@@ -332,7 +340,8 @@ class ProductsController {
    * @returns {Promise<Response>}
    */
   async destroy(req: Request<ProdutoIdParam>, res: Response) {
-    const produto = await Product.findByPk(req.params.id, {
+    const produto = await Product.findOne({
+      where: { id: req.params.id, user_id: req.userId },
       include: [{ model: File, as: "imagem" }],
     });
 

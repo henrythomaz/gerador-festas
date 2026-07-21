@@ -13,6 +13,7 @@ import { Sequelize, DataTypes, Model } from "sequelize";
  */
 interface AtributosItemContrato {
   id?: number;
+  user_id?: number;
   contrato_id: number;
   produto_id: number;
   quantidade: number;
@@ -32,6 +33,7 @@ class ContractProduct
   implements AtributosItemContrato
 {
   declare id?: number;
+  declare user_id?: number;
   declare contrato_id: number;
   declare produto_id: number;
   declare quantidade: number;
@@ -50,6 +52,11 @@ class ContractProduct
   static initModel(sequelize: Sequelize) {
     const model = super.init(
       {
+        user_id: {
+          type: DataTypes.INTEGER,
+          field: "user_id",
+          allowNull: true,
+        },
         contrato_id: {
           type: DataTypes.INTEGER,
           field: "contract_id",
@@ -104,6 +111,10 @@ class ContractProduct
    * @param {Object} models
    */
   static associate(models: any) {
+    models.ContractProduct.belongsTo(models.User, {
+      foreignKey: "user_id",
+      as: "usuario",
+    });
     models.ContractProduct.belongsTo(models.Contract, {
       foreignKey: "contrato_id",
       as: "contrato",

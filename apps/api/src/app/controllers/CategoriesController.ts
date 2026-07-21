@@ -95,6 +95,8 @@ class CategoriesController {
       const where: WhereOptions = {};
       const and: any[] = [];
 
+      and.push({ user_id: req.userId });
+
       // Aplica filtros LIKE para nome
       likeFilter(and, "nome", query.nome);
 
@@ -146,7 +148,9 @@ class CategoriesController {
      * Busca a categoria pelo ID.
      * @type {Category|null}
      */
-    const categoria = await Category.findByPk(req.params.id);
+    const categoria = await Category.findOne({
+      where: { id: req.params.id, user_id: req.userId },
+    });
 
     if (!categoria) {
       return res.status(404).json();
@@ -190,7 +194,10 @@ class CategoriesController {
      * Cria a nova categoria no banco de dados.
      * @type {Category}
      */
-    const novaCategoria = await Category.create(body);
+    const novaCategoria = await Category.create({
+      ...body,
+      user_id: req.userId,
+    });
 
     return res.status(201).json(novaCategoria);
   }
@@ -216,7 +223,9 @@ class CategoriesController {
      * Busca a categoria pelo ID.
      * @type {Category|null}
      */
-    const categoria = await Category.findByPk(req.params.id);
+    const categoria = await Category.findOne({
+      where: { id: req.params.id, user_id: req.userId },
+    });
 
     if (!categoria) {
       return res.status(404).json();
@@ -260,7 +269,9 @@ class CategoriesController {
      * Busca a categoria pelo ID.
      * @type {Category|null}
      */
-    const categoria = await Category.findByPk(req.params.id);
+    const categoria = await Category.findOne({
+      where: { id: req.params.id, user_id: req.userId },
+    });
 
     if (!categoria) {
       return res.status(404).json();
