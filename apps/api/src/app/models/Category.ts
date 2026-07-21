@@ -48,7 +48,7 @@ class Category extends Model<AtributosCategoria> implements AtributosCategoria {
   declare nome: string;
   declare readonly criado_em: Date;
   declare readonly atualizado_em: Date;
-  declare user_id?: number;
+  declare usuario_id?: number;
 
   /**
    * Inicializa o modelo Category no Sequelize.
@@ -70,7 +70,7 @@ class Category extends Model<AtributosCategoria> implements AtributosCategoria {
           field: "name",
           allowNull: false,
         },
-        user_id: {
+        usuario_id: {
           type: DataTypes.INTEGER,
           field: "user_id",
           allowNull: true, // ou false após popular

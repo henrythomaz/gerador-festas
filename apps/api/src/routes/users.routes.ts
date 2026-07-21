@@ -128,13 +128,38 @@ routes.get("/usuarios/:id", authMiddleware, usuarios.show);
 routes.put("/usuarios/:id", authMiddleware, usuarios.update);
 
 /**
- * Rota para deletar um usuário.
- * @route DELETE /usuarios/:id
- * @description Remove um usuário do sistema.
- * @security bearerAuth - Requer token JWT válido
- * @param {Object} req.params - Parâmetros da rota
- * @param {number} req.params.id - ID do usuário
- * @returns {Object} Mensagem de confirmação
+ * @swagger
+ * /usuarios/{id}:
+ *   delete:
+ *     summary: Deleta a própria conta e todos os dados associados (contratos, clientes, produtos, categorias, arquivos)
+ *     description: Remove permanentemente o usuário e todos os registros relacionados (contratos, itens, clientes, produtos, categorias, arquivos físicos). Ação irreversível.
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do usuário (deve ser o mesmo do token)
+ *     responses:
+ *       200:
+ *         description: Conta deletada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Conta e todos os dados associados foram deletados com sucesso.
+ *       403:
+ *         description: Sem permissão para deletar esta conta
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
 routes.delete("/usuarios/:id", authMiddleware, usuarios.destroy);
 

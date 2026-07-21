@@ -128,8 +128,8 @@ class ContractsController {
 
   async show(req: Request<ContratoIdParam>, res: Response) {
     const contrato = await Contract.findOne({
-  where: { id: req.params.id, usuario_id: req.userId }
-});
+      where: { id: req.params.id, usuario_id: req.userId },
+    });
     if (!contrato) return res.status(404).json();
     return res.json(contrato);
   }
@@ -154,9 +154,9 @@ class ContractsController {
       });
       const dadosContrato = { ...validatedBody, valor_total: 0 };
       const novoContrato = await Contract.create({
-  ...dadosContrato,
-  usuario_id: req.userId,
-});
+        ...dadosContrato,
+        usuario_id: req.userId,
+      });
 
       // Atualiza status do cliente
       const cliente = await Customer.findByPk(novoContrato.cliente_id);
@@ -172,8 +172,8 @@ class ContractsController {
 
   async update(req: Request<ContratoIdParam>, res: Response) {
     const contrato = await Contract.findOne({
-  where: { id: req.params.id, usuario_id: req.userId }
-});
+      where: { id: req.params.id, usuario_id: req.userId },
+    });
     if (!contrato) return res.status(404).json();
 
     const schema = Yup.object().shape({
@@ -249,8 +249,8 @@ class ContractsController {
 
   async destroy(req: Request<ContratoIdParam>, res: Response) {
     const contrato = await Contract.findOne({
-  where: { id: req.params.id, usuario_id: req.userId }
-});
+      where: { id: req.params.id, usuario_id: req.userId },
+    });
 
     if (!contrato) return res.status(404).json();
 
@@ -270,8 +270,8 @@ class ContractsController {
 
   async cancel(req: Request<ContratoIdParam>, res: Response) {
     const contrato = await Contract.findOne({
-  where: { id: req.params.id, usuario_id: req.userId }
-});
+      where: { id: req.params.id, usuario_id: req.userId },
+    });
 
     if (!contrato) return res.status(404).json();
 
@@ -301,8 +301,8 @@ class ContractsController {
 
   async archive(req: Request<ContratoIdParam>, res: Response) {
     const contrato = await Contract.findOne({
-  where: { id: req.params.id, usuario_id: req.userId }
-});
+      where: { id: req.params.id, usuario_id: req.userId },
+    });
 
     if (!contrato) return res.status(404).json();
 
@@ -332,123 +332,76 @@ class ContractsController {
    * Processa contratos expirados: muda status para LATE e envia e-mail para o USUÁRIO responsável.
    */
   async expire(req: Request, res: Response) {
-    const now = new Date();
+  const now = new Date();
 
-    const contratosExpirados = await Contract.findAll({
-      where: {
-        status: "ACTIVE",
-        data_fim: { [Op.lt]: now },
-      },
-    });
+  const contratosExpirados = await Contract.findAll({
+    where: {
+      status: "ACTIVE",
+      data_fim: { [Op.lt]: now },
+    },
+  });
 
-    if (contratosExpirados.length === 0) {
-      return res.json({ message: "Nenhum contrato expirado para processar." });
-    }
-
-    const transaction = await Contract.sequelize!.transaction();
-    let contratosProcessados = 0;
-    let emailsEnviados = 0;
-    let erros = [];
-
-    try {
-      for (const contrato of contratosExpirados) {
-        try {
-          // Muda status para LATE
-          await contrato.update({ status: "LATE" }, { transaction });
-
-          // Busca o USUÁRIO (responsável) associado ao contrato
-          const contrato = await Contract.findOne({
-  where: { id: req.params.id, usuario_id: req.userId },
-    transaction
-});
-
-          // Verifica se o usuário existe e tem email válido
-          if (!usuario) {
-            erros.push(
-              `Contrato #${contrato.id}: Usuário não encontrado (ID: ${contrato.usuario_id})`
-            );
-            console.warn(
-              `[CRON] Contrato #${contrato.id} sem usuário associado.`
-            );
-            continue;
-          }
-
-          if (!usuario.email) {
-            erros.push(
-              `Contrato #${contrato.id}: Usuário sem email cadastrado`
-            );
-            console.warn(
-              `[CRON] Contrato #${contrato.id} com usuário sem email.`
-            );
-            continue;
-          }
-
-          const baseUrl = process.env.APP_URL || "http://localhost:3000";
-          const frontendUrl =
-            process.env.FRONTEND_URL || "http://localhost:5173";
-
-          // Links para ações no frontend
-          const cancelLink = `${frontendUrl}/contratos/${contrato.id}/cancelar`;
-          const archiveLink = `${frontendUrl}/contratos/${contrato.id}/arquivar`;
-          const keepLink = `${frontendUrl}/contratos/${contrato.id}/manter-late`;
-
-          // Adiciona job na fila para enviar e-mail
-          await Queue.add(ExpirationNotificationJob.key, {
-            contratoId: contrato.id!,
-            usuarioNome: usuario.nome || "Usuário",
-            usuarioEmail: usuario.email,
-            dataFim: contrato.data_fim,
-            cancelLink,
-            archiveLink,
-            keepLink,
-          });
-
-          contratosProcessados++;
-          emailsEnviados++;
-
-          console.log(
-            `[CRON] Contrato #${contrato.id} marcado como LATE. Email enviado para ${usuario.email}`
-          );
-        } catch (error: any) {
-          erros.push(`Contrato #${contrato.id}: ${error.message}`);
-          console.error(
-            `[CRON] Erro ao processar contrato #${contrato.id}:`,
-            error
-          );
-          // Continua com o próximo contrato mesmo se um falhar
-        }
-      }
-
-      await transaction.commit();
-
-      // Log do resultado
-      const resultado = {
-        processados: contratosProcessados,
-        emails_enviados: emailsEnviados,
-        erros: erros.length > 0 ? erros : undefined,
-        message: `${contratosProcessados} contratos expirados marcados como LATE e ${emailsEnviados} notificações enviadas.`,
-      };
-
-      console.log("[CRON] Resultado final:", resultado);
-
-      return res.json(resultado);
-    } catch (error: any) {
-      await transaction.rollback();
-      console.error(
-        "[CRON] Erro fatal ao processar contratos expirados:",
-        error
-      );
-      return res.status(500).json({
-        erro: error.message,
-        detalhes: "Falha ao processar contratos expirados",
-      });
-    }
+  if (contratosExpirados.length === 0) {
+    return res.json({ message: "Nenhum contrato expirado para processar." });
   }
+
+  const transaction = await Contract.sequelize!.transaction();
+  let contratosProcessados = 0;
+  let emailsEnviados = 0;
+  const erros = [];
+
+  try {
+    for (const contrato of contratosExpirados) {
+      try {
+        // Atualiza status para LATE
+        await contrato.update({ status: "LATE" }, { transaction });
+
+        // Busca o usuário responsável (usuario_id do contrato)
+        const usuario = await User.findByPk(contrato.usuario_id, { transaction });
+
+        if (!usuario || !usuario.email) {
+          erros.push(`Contrato #${contrato.id}: usuário sem email.`);
+          continue;
+        }
+
+        // Envia e-mail via fila
+        const baseUrl = process.env.APP_URL || "http://localhost:3000";
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+
+        await Queue.add(ExpirationNotificationJob.key, {
+          contratoId: contrato.id!,
+          usuarioNome: usuario.nome || "Usuário",
+          usuarioEmail: usuario.email,
+          dataFim: contrato.data_fim,
+          cancelLink: `${frontendUrl}/contratos/${contrato.id}/cancelar`,
+          archiveLink: `${frontendUrl}/contratos/${contrato.id}/arquivar`,
+          keepLink: `${frontendUrl}/contratos/${contrato.id}/manter-late`,
+        });
+
+        contratosProcessados++;
+        emailsEnviados++;
+      } catch (err: any) {
+        erros.push(`Contrato #${contrato.id}: ${err.message}`);
+      }
+    }
+
+    await transaction.commit();
+    return res.json({
+      processados: contratosProcessados,
+      emails_enviados: emailsEnviados,
+      erros: erros.length ? erros : undefined,
+      message: `${contratosProcessados} contratos expirados marcados como LATE.`,
+    });
+  } catch (err: any) {
+    await transaction.rollback();
+    return res.status(500).json({ erro: err.message });
+  }
+}
 
   async keepLate(req: Request<ContratoIdParam>, res: Response) {
     const contrato = await Contract.findOne({
-  where: { id: req.params.id, usuario_id: req.userId }
-});
+      where: { id: req.params.id, usuario_id: req.userId },
+    });
     if (!contrato) return res.status(404).json();
 
     if (contrato.status !== "LATE") {
@@ -468,8 +421,8 @@ class ContractsController {
   async generatePdf(req: Request<ContratoIdParam>, res: Response) {
     try {
       const contrato = await Contract.findOne({
-  where: { id: req.params.id, usuario_id: req.userId }
-});
+        where: { id: req.params.id, usuario_id: req.userId },
+      });
 
       if (!contrato) {
         return res.status(404).json({ erro: "Contrato não encontrado." });
@@ -503,8 +456,8 @@ class ContractsController {
   async downloadPdf(req: Request<ContratoIdParam>, res: Response) {
     try {
       const contrato = await Contract.findOne({
-  where: { id: req.params.id, usuario_id: req.userId }
-});
+        where: { id: req.params.id, usuario_id: req.userId },
+      });
 
       if (!contrato) {
         return res.status(404).json({ erro: "Contrato não encontrado." });
@@ -554,9 +507,7 @@ class ContractsController {
   // ==================== MÉTODO PRIVADO ====================
 
   private async finalizeContract(contractId: number, transaction: any) {
-    const contrato = await Contract.findOne({
-  where: { id: contractId, usuario_id: req.userId }, transaction
-});
+    const contrato = await Contract.findByPk(contractId, {transaction});
 
     if (!contrato) return;
 

@@ -13,7 +13,7 @@ import { Sequelize, DataTypes, Model } from "sequelize";
  */
 interface AtributosProduto {
   id?: number;
-  user_id?: number;
+  usuario_id?: number;
   file_id?: number | null;
   nome: string;
   descricao: string;
@@ -32,7 +32,8 @@ interface AtributosProduto {
  */
 class Product extends Model<AtributosProduto> implements AtributosProduto {
   declare id?: number;
-  declare user_id?: number;
+  declare usuario_id?: number;
+  declare file_id?: number | null;
   declare nome: string;
   declare descricao: string;
   declare preco_aluguel: number;
@@ -52,7 +53,7 @@ class Product extends Model<AtributosProduto> implements AtributosProduto {
   static initModel(sequelize: Sequelize) {
     const model = super.init(
       {
-        user_id: {
+        usuario_id: {
           type: DataTypes.INTEGER,
           field: "user_id",
           allowNull: true,
@@ -126,7 +127,7 @@ class Product extends Model<AtributosProduto> implements AtributosProduto {
       as: "usuario",
     });
     models.Product.hasMany(models.ContractProduct, {
-      foreignKey: "produto_id",
+      foreignKey: "product_id",
       as: "itens_contrato",
     });
 

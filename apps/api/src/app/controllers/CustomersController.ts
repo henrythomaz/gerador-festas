@@ -90,7 +90,7 @@ class CustomersController {
       const where: WhereOptions = {};
       const and: any[] = [];
 
-      and.push({ user_id: req.userId });
+      and.push({ usuario_id: req.userId });
 
       likeFilter(and, "nome", query.nome);
       likeFilter(and, "telefone", query.telefone);
@@ -141,7 +141,7 @@ class CustomersController {
    */
   async show(req: Request<ClienteIdParam>, res: Response) {
     const cliente = await Customer.findOne({
-      where: { id: req.params.id, user_id: req.userId },
+      where: { id: req.params.id, usuario_id: req.userId },
     });
 
     if (!cliente) {
@@ -206,7 +206,7 @@ class CustomersController {
 
     const novoCliente = await Customer.create({
       ...body,
-      user_id: req.userId,
+      usuario_id: req.userId,
     });
 
     return res.status(201).json(novoCliente);
@@ -222,7 +222,7 @@ class CustomersController {
    */
   async update(req: Request<ClienteIdParam>, res: Response) {
     const cliente = await Customer.findOne({
-      where: { id: req.params.id, user_id: req.userId },
+      where: { id: req.params.id, usuario_id: req.userId },
     });
 
     if (!cliente) {
@@ -316,7 +316,7 @@ class CustomersController {
    */
   async destroy(req: Request<ClienteIdParam>, res: Response) {
     const cliente = await Customer.findOne({
-      where: { id: req.params.id, user_id: req.userId },
+      where: { id: req.params.id, usuario_id: req.userId },
     });
 
     if (!cliente) {

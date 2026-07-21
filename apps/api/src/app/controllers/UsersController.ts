@@ -8,9 +8,19 @@ import { Request, Response } from "express";
 import crypto from "crypto";
 import { WhereOptions, Op } from "sequelize";
 import * as Yup from "yup";
+import { unlink } from "fs/promises";
+import { resolve } from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import { sequelize } from "../database/index.js";
 
 import User from "../models/User.js";
 import File from "../models/File.js";
+import Contract from "../models/Contract.js";
+import ContractProduct from "../models/ContractProduct.js";
+import Product from "../models/Product.js";
+import Customer from "../models/Customer.js";
+import Category from "../models/Category.js";
 
 import Queue from "../../lib/Queue.js";
 import WelcomeEmailJob from "../jobs/WelcomeEmailJob.js";
@@ -20,6 +30,9 @@ import ConfirmEmailJob from "../jobs/ConfirmEmailJob.js";
 import likeFilter from "../utils/likeFilter.js";
 import dataInterval from "../utils/dataInterval.js";
 import ordenation from "../utils/ordenation.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * Interface para parâmetros de rota com ID de usuário.
@@ -321,24 +334,112 @@ class UsersController {
    * // DELETE /usuarios/1
    */
   async destroy(req: Request<UsuarioIdParam>, res: Response) {
-    /**
-     * Busca o usuário pelo ID.
-     * @type {User|null}
-     */
-    const usuario = await User.findByPk(req.params.id);
+    const userId = Number(req.params.id);
 
-    if (!usuario) {
-      return res.status(404).json();
+    // Verifica se o usuário logado é o mesmo que está sendo deletado
+    if (userId !== req.userId) {
+      return res
+        .status(403)
+        .json({ erro: "Você só pode deletar sua própria conta." });
     }
 
-    /**
-     * Remove o usuário do banco de dados.
-     */
-    await usuario.destroy();
+    const usuario = await User.findByPk(userId);
+    if (!usuario) {
+      return res.status(404).json({ erro: "Usuário não encontrado." });
+    }
 
-    return res.json();
+    // Inicia a transação usando a instância do Sequelize do modelo
+    const transaction = await User.sequelize!.transaction();
+
+    try {
+      // 1. Deletar contratos e seus itens
+      const contratos = await Contract.findAll({
+        where: { usuario_id: userId }, // campo correto
+        transaction,
+      });
+
+      for (const contrato of contratos) {
+        await ContractProduct.destroy({
+          where: { contrato_id: contrato.id },
+          transaction,
+        });
+        await contrato.destroy({ transaction });
+      }
+
+      // 2. Deletar produtos e suas imagens (arquivos físicos)
+      const produtos = await Product.findAll({
+        where: { usuario_id: userId },
+        include: [{ model: File, as: "imagem" }],
+        transaction,
+      });
+
+      for (const produto of produtos) {
+        if (produto.file_id) {
+          const arquivo = produto.imagem;
+          if (arquivo) {
+            const uploadDir = resolve(
+              __dirname,
+              "..",
+              "..",
+              "storage",
+              "uploads"
+            );
+            const caminhoCompleto = resolve(uploadDir, arquivo.caminho);
+            try {
+              await unlink(caminhoCompleto);
+            } catch {}
+            await arquivo.destroy({ transaction });
+          }
+        }
+        await produto.destroy({ transaction });
+      }
+
+      // 3. Deletar clientes
+      await Customer.destroy({
+        where: { usuario_id: userId },
+        transaction,
+      });
+
+      // 4. Deletar categorias
+      await Category.destroy({
+        where: { usuario_id: userId },
+        transaction,
+      });
+
+      // 5. Deletar avatar do usuário (se houver)
+      if (usuario.file_id) {
+        const avatar = await File.findByPk(usuario.file_id, { transaction });
+        if (avatar) {
+          const uploadDir = resolve(
+            __dirname,
+            "..",
+            "..",
+            "storage",
+            "uploads"
+          );
+          const caminhoCompleto = resolve(uploadDir, avatar.caminho);
+          try {
+            await unlink(caminhoCompleto);
+          } catch {}
+          await avatar.destroy({ transaction });
+        }
+      }
+
+      // 6. Finalmente, deletar o usuário
+      await usuario.destroy({ transaction });
+
+      await transaction.commit();
+
+      return res.status(200).json({
+        message:
+          "Conta e todos os dados associados foram deletados com sucesso.",
+      });
+    } catch (err: any) {
+      await transaction.rollback();
+      console.error("Erro ao deletar conta:", err);
+      return res.status(500).json({ erro: "Erro interno ao deletar conta." });
+    }
   }
-
   /**
    * Confirma o email do usuário.
    * @method confirmarEmail

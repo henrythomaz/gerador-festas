@@ -96,7 +96,7 @@ class ProductsController {
       const where: WhereOptions = {};
       const and: any[] = [];
 
-      and.push({ user_id: req.userId });
+      and.push({ usuario_id: req.userId });
 
       likeFilter(and, "nome", query.nome);
       likeFilter(and, "descricao", query.descricao);
@@ -166,7 +166,7 @@ class ProductsController {
    */
   async show(req: Request<ProdutoIdParam>, res: Response) {
     const produto = await Product.findOne({
-      where: { id: req.params.id, user_id: req.userId },
+      where: { id: req.params.id, usuario_id: req.userId },
       include: [
         { model: File, as: "imagem", attributes: ["id", "nome", "caminho"] },
       ],
@@ -210,7 +210,7 @@ class ProductsController {
 
     const novoProduto = await Product.create({
       ...dadosProduto,
-      user_id: req.userId,
+      usuario_id: req.userId,
     });
 
     return res.status(201).json(novoProduto);
@@ -226,7 +226,7 @@ class ProductsController {
    */
   async update(req: Request<ProdutoIdParam>, res: Response) {
     const produto = await Product.findOne({
-      where: { id: req.params.id, user_id: req.userId },
+      where: { id: req.params.id, usuario_id: req.userId },
     });
 
     if (!produto) {
@@ -341,7 +341,7 @@ class ProductsController {
    */
   async destroy(req: Request<ProdutoIdParam>, res: Response) {
     const produto = await Product.findOne({
-      where: { id: req.params.id, user_id: req.userId },
+      where: { id: req.params.id, usuario_id: req.userId },
       include: [{ model: File, as: "imagem" }],
     });
 

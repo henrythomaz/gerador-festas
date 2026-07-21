@@ -78,7 +78,7 @@ class ContractsProductsController {
       const where: WhereOptions = {};
       const and: any[] = [];
 
-      and.push({ user_id: req.userId });
+      and.push({ usuario_id: req.userId });
 
       if (query.contrato_id) {
         and.push({ contrato_id: Number(query.contrato_id) });
