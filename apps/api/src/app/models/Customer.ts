@@ -102,13 +102,14 @@ class Customer extends Model<AtributosCliente> implements AtributosCliente {
           type: DataTypes.STRING,
           field: "cpf",
           allowNull: false,
+          unique: "cpf_user_id_unique",
         },
         /** Email do cliente (mapeado para 'email' no banco) */
         email: {
           type: DataTypes.STRING,
           field: "email",
           allowNull: false,
-          unique: true,
+          unique: "email_user_id_unique",
         },
         /** Status do cliente (mapeado para 'status' no banco) */
         status: {

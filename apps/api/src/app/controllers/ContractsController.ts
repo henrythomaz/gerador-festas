@@ -332,71 +332,74 @@ class ContractsController {
    * Processa contratos expirados: muda status para LATE e envia e-mail para o USUÁRIO responsável.
    */
   async expire(req: Request, res: Response) {
-  const now = new Date();
+    const now = new Date();
 
-  const contratosExpirados = await Contract.findAll({
-    where: {
-      status: "ACTIVE",
-      data_fim: { [Op.lt]: now },
-    },
-  });
+    const contratosExpirados = await Contract.findAll({
+      where: {
+        status: "ACTIVE",
+        data_fim: { [Op.lt]: now },
+      },
+    });
 
-  if (contratosExpirados.length === 0) {
-    return res.json({ message: "Nenhum contrato expirado para processar." });
-  }
-
-  const transaction = await Contract.sequelize!.transaction();
-  let contratosProcessados = 0;
-  let emailsEnviados = 0;
-  const erros = [];
-
-  try {
-    for (const contrato of contratosExpirados) {
-      try {
-        // Atualiza status para LATE
-        await contrato.update({ status: "LATE" }, { transaction });
-
-        // Busca o usuário responsável (usuario_id do contrato)
-        const usuario = await User.findByPk(contrato.usuario_id, { transaction });
-
-        if (!usuario || !usuario.email) {
-          erros.push(`Contrato #${contrato.id}: usuário sem email.`);
-          continue;
-        }
-
-        // Envia e-mail via fila
-        const baseUrl = process.env.APP_URL || "http://localhost:3000";
-        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-
-        await Queue.add(ExpirationNotificationJob.key, {
-          contratoId: contrato.id!,
-          usuarioNome: usuario.nome || "Usuário",
-          usuarioEmail: usuario.email,
-          dataFim: contrato.data_fim,
-          cancelLink: `${frontendUrl}/contratos/${contrato.id}/cancelar`,
-          archiveLink: `${frontendUrl}/contratos/${contrato.id}/arquivar`,
-          keepLink: `${frontendUrl}/contratos/${contrato.id}/manter-late`,
-        });
-
-        contratosProcessados++;
-        emailsEnviados++;
-      } catch (err: any) {
-        erros.push(`Contrato #${contrato.id}: ${err.message}`);
-      }
+    if (contratosExpirados.length === 0) {
+      return res.json({ message: "Nenhum contrato expirado para processar." });
     }
 
-    await transaction.commit();
-    return res.json({
-      processados: contratosProcessados,
-      emails_enviados: emailsEnviados,
-      erros: erros.length ? erros : undefined,
-      message: `${contratosProcessados} contratos expirados marcados como LATE.`,
-    });
-  } catch (err: any) {
-    await transaction.rollback();
-    return res.status(500).json({ erro: err.message });
+    const transaction = await Contract.sequelize!.transaction();
+    let contratosProcessados = 0;
+    let emailsEnviados = 0;
+    const erros = [];
+
+    try {
+      for (const contrato of contratosExpirados) {
+        try {
+          // Atualiza status para LATE
+          await contrato.update({ status: "LATE" }, { transaction });
+
+          // Busca o usuário responsável (usuario_id do contrato)
+          const usuario = await User.findByPk(contrato.usuario_id, {
+            transaction,
+          });
+
+          if (!usuario || !usuario.email) {
+            erros.push(`Contrato #${contrato.id}: usuário sem email.`);
+            continue;
+          }
+
+          // Envia e-mail via fila
+          const baseUrl = process.env.APP_URL || "http://localhost:3000";
+          const frontendUrl =
+            process.env.FRONTEND_URL || "http://localhost:5173";
+
+          await Queue.add(ExpirationNotificationJob.key, {
+            contratoId: contrato.id!,
+            usuarioNome: usuario.nome || "Usuário",
+            usuarioEmail: usuario.email,
+            dataFim: contrato.data_fim,
+            cancelLink: `${frontendUrl}/contratos/${contrato.id}/cancelar`,
+            archiveLink: `${frontendUrl}/contratos/${contrato.id}/arquivar`,
+            keepLink: `${frontendUrl}/contratos/${contrato.id}/manter-late`,
+          });
+
+          contratosProcessados++;
+          emailsEnviados++;
+        } catch (err: any) {
+          erros.push(`Contrato #${contrato.id}: ${err.message}`);
+        }
+      }
+
+      await transaction.commit();
+      return res.json({
+        processados: contratosProcessados,
+        emails_enviados: emailsEnviados,
+        erros: erros.length ? erros : undefined,
+        message: `${contratosProcessados} contratos expirados marcados como LATE.`,
+      });
+    } catch (err: any) {
+      await transaction.rollback();
+      return res.status(500).json({ erro: err.message });
+    }
   }
-}
 
   async keepLate(req: Request<ContratoIdParam>, res: Response) {
     const contrato = await Contract.findOne({
@@ -507,7 +510,7 @@ class ContractsController {
   // ==================== MÉTODO PRIVADO ====================
 
   private async finalizeContract(contractId: number, transaction: any) {
-    const contrato = await Contract.findByPk(contractId, {transaction});
+    const contrato = await Contract.findByPk(contractId, { transaction });
 
     if (!contrato) return;
 

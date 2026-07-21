@@ -26,7 +26,7 @@ module.exports = {
       email: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: false,
+        unique: true,
       },
       status: {
         type: Sequelize.ENUM("ACTIVE", "ARCHIVED"),

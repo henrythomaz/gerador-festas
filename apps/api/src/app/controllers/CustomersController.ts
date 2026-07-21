@@ -189,7 +189,7 @@ class CustomersController {
     }
 
     const clienteCpfExiste = await Customer.findOne({
-      where: { cpf: body.cpf },
+      where: { cpf: body.cpf, usuario_id: req.userId },
     });
 
     if (clienteCpfExiste) {
@@ -197,7 +197,7 @@ class CustomersController {
     }
 
     const clienteEmailExiste = await Customer.findOne({
-      where: { email: body.email },
+      where: { email: body.email, usuario_id: req.userId },
     });
 
     if (clienteEmailExiste) {
@@ -260,18 +260,18 @@ class CustomersController {
     // Verificações de unicidade de CPF e email (já existentes)
     if (req.body.cpf && req.body.cpf !== cliente.cpf) {
       const cpfExiste = await Customer.findOne({
-        where: { cpf: req.body.cpf },
+        where: { cpf: req.body.cpf, usuario_id: req.userId },
       });
       if (cpfExiste) {
         return res
           .status(409)
-          .json({ erro: "CPF já cadastrado por outro cliente." });
+          .json({ erro: "CPF já cadastrado para este usuário." });
       }
     }
 
     if (req.body.email && req.body.email !== cliente.email) {
       const emailExiste = await Customer.findOne({
-        where: { email: req.body.email },
+        where: { email: req.body.email, usuario_id: req.userId },
       });
       if (emailExiste) {
         return res
