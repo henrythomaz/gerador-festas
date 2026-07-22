@@ -37,19 +37,19 @@ export function SiteLayout({ children }: SiteLayoutProps) {
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
-              <img
-                src={IconeInvertido}
-                alt="Gerenciador de Festas"
-                className="h-7 w-7"
-              />
+            <img src={IconeInvertido} alt="Gerenciador de Festas" className="h-7 w-7" />
             <span className="text-base font-semibold">
               Gerenciador <span className="text-gradient-brand">de Festas</span>
             </span>
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-            <Link to="/" className="hover:text-foreground transition">Início</Link>
-            <Link to="/download" className="hover:text-foreground transition">Download</Link>
+            <Link to="/" className="hover:text-foreground transition">
+              Início
+            </Link>
+            <Link to="/download" className="hover:text-foreground transition">
+              Download
+            </Link>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -85,10 +85,7 @@ export function SiteLayout({ children }: SiteLayoutProps) {
                 >
                   Entrar
                 </Link>
-                <Link
-                  to="/cadastro"
-                  className="btn-brand !px-4 !py-2 !text-sm"
-                >
+                <Link to="/cadastro" className="btn-brand !px-4 !py-2 !text-sm">
                   Criar conta
                 </Link>
               </>
@@ -103,19 +100,23 @@ export function SiteLayout({ children }: SiteLayoutProps) {
         <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-4 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:px-6">
           <div className="flex items-center gap-2">
             <span className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-brand">
-                <img
-                  src={IconeInvertido}
-                  alt="Gerenciador de Festas"
-                  className="h-7 w-7"
-                />
+              <img src={IconeInvertido} alt="Gerenciador de Festas" className="h-7 w-7" />
             </span>
             <span>© {new Date().getFullYear()} Gerenciador de Festas</span>
           </div>
           <nav className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link to="/" className="hover:text-foreground transition">Início</Link>
-            <Link to="/download" className="hover:text-foreground transition">Baixar app</Link>
-            <Link to="/login" className="hover:text-foreground transition">Entrar</Link>
-            <Link to="/cadastro" className="hover:text-foreground transition">Cadastrar</Link>
+            <Link to="/" className="hover:text-foreground transition">
+              Início
+            </Link>
+            <Link to="/download" className="hover:text-foreground transition">
+              Baixar app
+            </Link>
+            <Link to="/login" className="hover:text-foreground transition">
+              Entrar
+            </Link>
+            <Link to="/cadastro" className="hover:text-foreground transition">
+              Cadastrar
+            </Link>
           </nav>
         </div>
       </footer>

@@ -110,7 +110,7 @@ function LoginPage() {
           {error && (
             <div
               className={`mb-4 rounded-xl border px-4 py-2.5 text-sm ${getErrorStyles(
-                error.status
+                error.status,
               )}`}
             >
               <span className="font-medium">{error.status}</span>: {error.message}
@@ -122,7 +122,10 @@ function LoginPage() {
           </button>
 
           <div className="mt-4 text-center text-sm">
-            <Link to="/esqueci-senha" className="text-muted-foreground hover:text-foreground hover:underline">
+            <Link
+              to="/esqueci-senha"
+              className="text-muted-foreground hover:text-foreground hover:underline"
+            >
               Esqueci minha senha
             </Link>
           </div>

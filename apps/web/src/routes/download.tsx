@@ -5,7 +5,10 @@ export const Route = createFileRoute("/download")({
   head: () => ({
     meta: [
       { title: "Baixar app desktop — Gerenciador de Festas" },
-      { name: "description", content: "Baixe o aplicativo desktop do Gerenciador de Festas para Windows, macOS e Linux." },
+      {
+        name: "description",
+        content: "Baixe o aplicativo desktop do Gerenciador de Festas para Windows, macOS e Linux.",
+      },
     ],
   }),
   component: DownloadPage,
@@ -37,16 +40,21 @@ function DownloadCard({ p }: { p: Platform }) {
         </div>
         <div>
           <h3 className="text-lg font-semibold">{p.os}</h3>
-          <p className="text-xs text-muted-foreground">Versão {APP_VERSION} · {p.size}</p>
+          <p className="text-xs text-muted-foreground">
+            Versão {APP_VERSION} · {p.size}
+          </p>
         </div>
       </div>
       <p className="mb-5 text-sm text-muted-foreground">
-        Instalador oficial para {p.os}. Arquivo: <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{p.file}</code>
+        Instalador oficial para {p.os}. Arquivo:{" "}
+        <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{p.file}</code>
       </p>
       <a
         href={p.url ?? "#"}
         aria-disabled={disabled}
-        onClick={(e) => { if (disabled) e.preventDefault(); }}
+        onClick={(e) => {
+          if (disabled) e.preventDefault();
+        }}
         className={
           disabled
             ? "mt-auto inline-flex cursor-not-allowed items-center justify-center rounded-xl border border-border bg-muted/60 px-5 py-3 text-sm font-medium text-muted-foreground"
@@ -80,7 +88,9 @@ function DownloadPage() {
 
       <section className="mx-auto w-full max-w-6xl px-4 pb-12 sm:px-6">
         <div className="grid gap-5 md:grid-cols-3">
-          {platforms.map((p) => <DownloadCard key={p.os} p={p} />)}
+          {platforms.map((p) => (
+            <DownloadCard key={p.os} p={p} />
+          ))}
         </div>
 
         <div className="mt-10 grid gap-5 md:grid-cols-2">
@@ -112,4 +122,3 @@ function DownloadPage() {
     </SiteLayout>
   );
 }
-

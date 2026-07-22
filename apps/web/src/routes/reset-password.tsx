@@ -115,7 +115,10 @@ function ResetPage() {
           {!token && (
             <p className="mt-3 text-center text-xs text-muted-foreground">
               Link inválido. Solicite um novo em{" "}
-              <Link to="/esqueci-senha" className="underline">Esqueci minha senha</Link>.
+              <Link to="/esqueci-senha" className="underline">
+                Esqueci minha senha
+              </Link>
+              .
             </p>
           )}
         </form>
@@ -123,4 +126,3 @@ function ResetPage() {
     </SiteLayout>
   );
 }
-

@@ -11,8 +11,8 @@
     "web": "yarn workspace gf-web dev",
     "build": "yarn workspace gf-web build",
     "deploy": "yarn workspace gf-web deploy",
-    "lint": "yarn workspaces foreach -p run lint",
-    "format": "yarn workspaces foreach -p run format"
+    "format": "yarn workspaces foreach -A -p run format",
+    "lint": "yarn workspaces foreach -A -p run lint"
   },
   "resolutions": {
     "@types/express": "4.17.25"

@@ -19,7 +19,11 @@ export function getStoredUser(): AuthUser | null {
   if (typeof window === "undefined") return null;
   const raw = window.localStorage.getItem(USER_KEY);
   if (!raw) return null;
-  try { return JSON.parse(raw) as AuthUser; } catch { return null; }
+  try {
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    return null;
+  }
 }
 
 export function setSession(token: string, user: AuthUser) {
@@ -61,7 +65,7 @@ function extractMessage(data: unknown, fallback: string): string {
     // Verifica os campos mais comuns, incluindo "erro" (português)
     if (typeof d.message === "string") return d.message;
     if (typeof d.error === "string") return d.error;
-    if (typeof d.erro === "string") return d.erro;      // <-- ADICIONADO
+    if (typeof d.erro === "string") return d.erro; // <-- ADICIONADO
     if (Array.isArray(d.errors) && d.errors.length && typeof d.errors[0] === "string") {
       return d.errors[0] as string;
     }
@@ -113,7 +117,7 @@ export async function fetchUserProfile(userId: number): Promise<AuthUser> {
   try {
     const data = await api<any>(`/usuarios/${userId}`, { auth: true });
     let avatarUrl: string | null = null;
-    if (data.avatar && typeof data.avatar === 'object' && data.avatar.caminho) {
+    if (data.avatar && typeof data.avatar === "object" && data.avatar.caminho) {
       avatarUrl = `${API_BASE_URL}/files/${data.avatar.caminho}`;
     }
     return {
@@ -123,7 +127,7 @@ export async function fetchUserProfile(userId: number): Promise<AuthUser> {
       avatar: avatarUrl,
     };
   } catch (error) {
-    console.error('Erro ao buscar perfil do usuário:', error);
+    console.error("Erro ao buscar perfil do usuário:", error);
     throw error;
   }
 }

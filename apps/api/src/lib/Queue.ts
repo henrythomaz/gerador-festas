@@ -14,6 +14,8 @@ import ResetPasswordJob from "../app/jobs/ResetPasswordJob.js";
 import WelcomeToBackJob from "../app/jobs/WelcomeToBackJob.js";
 import ConfirmEmailJob from "../app/jobs/ConfirmEmailJob.js";
 import ExpirationNotificationJob from "../app/jobs/ExpirationNotificationJob.js";
+import SyncGoogleDriveJob from "../app/jobs/SyncGoogleDriveJob.js";
+import RestoreBackupJob from "../app/jobs/RestoreBackupJob.js";
 
 import type { Job } from "bee-queue";
 
@@ -30,6 +32,8 @@ const jobs = [
   ResetPasswordJob,
   ConfirmEmailJob,
   ExpirationNotificationJob,
+  SyncGoogleDriveJob,
+  RestoreBackupJob,
 ];
 
 /**
@@ -101,8 +105,16 @@ class Queue {
    *   token: "abc123"
    * });
    */
-  add(queue: string, job: any) {
-    return this.queues[queue].bee.createJob(job).save();
+  // @ts-ignore
+  add(queue: string, job: any, options?: { delay?: number }) {
+    // @ts-ignore
+    const jobInstance = this.queues[queue].bee.createJob(job);
+    // @ts-ignore
+    if (options?.delay) {
+      (jobInstance as any).delay(options.delay);
+    }
+    // @ts-ignore
+    return jobInstance.save();
   }
 
   /**

@@ -11,6 +11,8 @@
 import { Sequelize, DataTypes, Model } from "sequelize";
 import bcrypt from "bcryptjs";
 
+import GoogleToken from "./GoogleToken.js";
+
 /**
  * Interface que define os atributos do modelo User.
  * @interface AtributosUsuario
@@ -185,6 +187,8 @@ class User extends Model<AtributosUsuario> implements AtributosUsuario {
       foreignKey: "file_id",
       as: "avatar",
     });
+
+    User.hasOne(GoogleToken, { foreignKey: "user_id" });
   }
 
   /**

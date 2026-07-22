@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getSession, setSession, clearSession, AuthUser, fetchUserProfile } from './api';
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { getSession, setSession, clearSession, AuthUser, fetchUserProfile } from "./api";
 
 interface AuthContextType {
   user: AuthUser | null;

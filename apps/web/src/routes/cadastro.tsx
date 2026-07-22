@@ -102,8 +102,8 @@ function SignupPage() {
           }
         >
           <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
-            Verifique sua caixa de entrada em <strong className="text-foreground">{email}</strong> e clique
-            no link de confirmação para ativar sua conta.
+            Verifique sua caixa de entrada em <strong className="text-foreground">{email}</strong> e
+            clique no link de confirmação para ativar sua conta.
           </div>
           <Link to="/login" className="btn-brand mt-6 w-full">
             Ir para o login
@@ -178,7 +178,7 @@ function SignupPage() {
           {apiError && (
             <div
               className={`mb-4 rounded-xl border px-4 py-2.5 text-sm ${getErrorStyles(
-                apiError.status
+                apiError.status,
               )}`}
             >
               <span className="font-medium">{apiError.status}</span>: {apiError.message}

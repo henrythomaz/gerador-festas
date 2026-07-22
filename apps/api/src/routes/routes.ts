@@ -15,6 +15,7 @@ import contratosRoutes from "./contracts.routes.js";
 import itensContratoRoutes from "./contractItems.routes.js";
 import produtosRoutes from "./products.routes.js";
 import filesRoutes from "./files.routes.js";
+import syncRoutes from "./sync.routes.js";
 
 /**
  * Instância principal do roteador Express.
@@ -37,6 +38,7 @@ routes.use(contratosRoutes);
 routes.use(itensContratoRoutes);
 routes.use(produtosRoutes);
 routes.use(filesRoutes);
+routes.use("/sync", syncRoutes);
 
 /**
  * Exporta o roteador configurado.

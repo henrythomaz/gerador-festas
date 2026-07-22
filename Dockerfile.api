@@ -24,7 +24,6 @@ RUN yarn build
 WORKDIR /app/apps/api
 RUN yarn build
 
-
 # -------------------------------------------------
 
 FROM node:20-alpine

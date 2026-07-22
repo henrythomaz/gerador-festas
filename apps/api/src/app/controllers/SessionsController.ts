@@ -8,6 +8,8 @@
  */
 
 import User from "../models/User.js";
+import GoogleToken from '../models/GoogleToken.js';
+
 import jwt, { SignOptions } from "jsonwebtoken";
 import { Request, Response } from "express";
 import auth from "../../config/auth.js";
@@ -64,7 +66,7 @@ class SessionsController {
     // 🔹 Mensagem específica para e-mail não confirmado
     if (!usuario.email_confirmado) {
       return res.status(401).json({
-        erro: "Confirme o seu e-mail antes de realizar o login.",
+        erro: "Confirme o seu e-mail antes. (Verifique sua caixa de spam)",
       });
     }
 
@@ -90,6 +92,13 @@ class SessionsController {
       expiresIn: auth.expiresIn,
     } as SignOptions);
 
+    // let hasNewerBackup = false;
+    // let backupDate = null;
+    // const googleToken = await GoogleToken.findOne({ where: { user_id: id } });
+    // if (googleToken) {
+    //   // ... lógica para verificar backup (similar ao checkBackup)
+    //   // Se houver backup mais recente, marcar hasNewerBackup = true
+    // }
     return res.json({
       user: { id, nome, email: userEmail },
       token,

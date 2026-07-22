@@ -3,8 +3,8 @@
  * @description Serviço de envio de emails usando Nodemailer com Gmail.
  */
 
-import nodemailer from 'nodemailer';
-import mailConfig from '../config/mail.js';
+import nodemailer from "nodemailer";
+import mailConfig from "../config/mail.js";
 
 /**
  * Classe de serviço de email.
@@ -25,7 +25,7 @@ class Mail {
   constructor() {
     // Cria o transporter com as credenciais do Gmail
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD,
@@ -61,7 +61,7 @@ class Mail {
     };
 
     const info = await this.transporter.sendMail(mailOptions);
-    console.log('E-mail enviado:', info.messageId);
+    console.log("E-mail enviado:", info.messageId);
     return info;
   }
 }

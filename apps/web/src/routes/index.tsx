@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site-layout";
 import { useAuth } from "@/lib/auth-context";
+import { useSearch } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -38,6 +41,15 @@ function Feature({
 
 function Index() {
   const { user, isLoading } = useAuth();
+
+  const search = Route.useSearch<{ sync?: string }>();
+useEffect(() => {
+  if (search.sync === "connected") {
+    toast.success("Conta do Google conectada!");
+    // Limpa a URL substituindo o parâmetro
+    window.history.replaceState({}, "", "/");
+  }
+}, [search.sync]);
 
   if (isLoading) {
     return <div className="flex min-h-screen items-center justify-center">Carregando...</div>;
@@ -93,8 +105,8 @@ function Index() {
       <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">
         <h2 className="text-3xl font-bold">Tudo que você precisa para não perder um contrato</h2>
         <p className="mt-3 text-muted-foreground">
-        Da criação ao arquivamento, com notificações automáticas quando algo precisa da sua
-        atenção.
+          Da criação ao arquivamento, com notificações automáticas quando algo precisa da sua
+          atenção.
         </p>
       </div>
       <section className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">

@@ -15,6 +15,7 @@ import Contract from "../app/models/Contract.js";
 import Category from "../app/models/Category.js";
 import ContractProduct from "../app/models/ContractProduct.js";
 import File from "../app/models/File.js";
+import GoogleToken from "../app/models/GoogleToken.js";
 
 /**
  * Classe de gerenciamento do banco de dados.
@@ -65,6 +66,7 @@ class Database {
       Category,
       ContractProduct,
       File,
+      GoogleToken,
     };
 
     /**

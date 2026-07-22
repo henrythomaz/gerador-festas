@@ -68,13 +68,16 @@ function ConfirmEmailPage() {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const getErrorStyles = (status: number | null) => {
     if (!status) return "border-border bg-muted/40 text-muted-foreground";
     if (status >= 500) return "border-destructive/30 bg-destructive/10 text-destructive";
-    if (status === 404 || status === 409) return "border-yellow-500/30 bg-yellow-50 text-yellow-700";
+    if (status === 404 || status === 409)
+      return "border-yellow-500/30 bg-yellow-50 text-yellow-700";
     return "border-orange-500/30 bg-orange-50 text-orange-700";
   };
 
@@ -94,8 +97,8 @@ function ConfirmEmailPage() {
           status === "loading"
             ? "Confirmando email…"
             : status === "success"
-            ? "Email confirmado 🎉"
-            : "Não foi possível confirmar"
+              ? "Email confirmado 🎉"
+              : "Não foi possível confirmar"
         }
         subtitle={status === "loading" ? "Só um instante." : undefined}
       >
